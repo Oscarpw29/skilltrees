@@ -1,5 +1,16 @@
-if SERVER then 
-    print("[SkillTrees] Server Loaded!")
-else 
-    print("[SkillTrees Client Loaded]")
+SkillTrees = SkillTrees or {}
+
+if SERVER then
+    AddCSLuaFile("skilltrees/cl_menu.lua")
+    AddCSLuaFile("skilltrees/sh_core.lua")
+    AddCSLuaFile("skilltrees/cl_commands.lua")
+
+    include("skilltrees/sv_data.lua")
+    include("skilltrees/sv_skills.lua")
+else
+    include("skilltrees/sh_core.lua")
+    include("skilltrees/cl_commands.lua")
+    include("skilltrees/cl_menu.lua")
 end
+
+include("skilltrees/sh_core.lua")
