@@ -3,12 +3,14 @@ if SERVER then
     util.AddNetworkString("vtx_skills_purchase")
 end
 
+local PDATA_KEY = "vtx_skilldata"
+
 hook.Add("PlayerInitialSpawn", "SkillTrees_Load", function(ply)
     local timerID = "SkillTree_Load_" .. ply:SteamID64()
     timer.Create(timerID, 1, 5, function()
         if not IsValid(ply) then timer.Remove(timerID) return end
 
-        local data = ply:GetPData("vtx_skilldata", nil)
+        local data = ply:GetPData(PDATA_KEY, nil)
 
         if data then
             ply.SkillData = util.JSONToTable(data)

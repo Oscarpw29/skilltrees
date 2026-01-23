@@ -2,44 +2,67 @@ util.AddNetworkString("vtx_skills_purchase")
 
 net.Receive("vtx_skills_purchase", function(len, ply)
     local skillID = net.ReadString()
-    local skill = SkillTrees.Skills[skillID]
+    print("[Debug] Recieved purcahse request from".. ply:Nick().. " for " .. skillID)
+    local skillInfo, categoryName = SkillTrees:GetSkill(skillID)
 
-    if not skill or not ply.SkillData then return end
+    if not skillInfo then return end
 
-    if skill.requirement then
-        local reqId = skill.requirement
-        local ownedReq = ply.SkillData.skills[reqId] or 0
+    ply.SkillData = ply.SkillData or { points = 0, skills = {} }
 
-        if ownedReq <= 0 then
-            ply:ChatPrint("Locked you need to buy".. (SkillTrees.Skills[reqId].name or reqId).. "first.")
-            return 
+    if skillInfo.requirement then
+        local reqId = skillInfo.requirement
+        local reqInfo = SkillTrees:GetSkill(reqId)
+        
+        if reqInfo then
+            local playerReqLevel = ply.SkillData.skills[reqId] or 0
+            local targetMaxLevel = reqInfo.maxLevel or 1
+            
+            if playerReqLevel < targetMaxLevel then
+                ply:ChatPrint("Locked! You must reach Max Level with ".. reqInfo.name .." first.")
+                return 
+            end
         end
     end
 
-    if skill.allowedJobs then
+    if skillInfo.allowedJobs then
         local jobName = team.GetName(ply:Team())
-        if not table.HasValue(skill.allowedJobs, jobName) then
+        if not table.HasValue(skillInfo.allowedJobs, jobName) then
             ply:ChatPrint("Your current job cannot learn this!")
             return 
         end
     end
 
-    if skill.allowedSteamIDs and not table.HasValue(skill.allowedSteamIDs, ply:SteamID()) then
+    if skillInfo.allowedSteamIDs and not table.HasValue(skillInfo.allowedSteamIDs, ply:SteamID()) then
         ply:ChatPrint("You do not have permission to use this skill.")
         return 
     end
-
-    local current = ply.SkillData.skills[skillID] or 0
-    if current >= skill.maxLevel then return end
-    if ply.SkillData.points <= 0 then return end
+    local currentLevel = 0
+    if ply.SkillData and ply.SkillData.skills and ply.SkillData.skills[skillID] then
+        currentLevel = ply.SkillData.skills[skillID]
+    end
+    print("[DEBUG] Comparing Level: ", currentLevel, " to Max: ", skillInfo.maxLevel)
+    local cost = skillInfo.price or 1
+    if currentLevel >= (skillInfo.maxLevel or 1) then ply:ChatPrint("You are already max level") return end
+    if (ply.SkillData.points or 0) < cost then return end
     
-    ply.SkillData.points = ply.SkillData.points - 1
-    ply.SkillData.skills[skillID] = current + 1
+    ply.SkillData.points = ply.SkillData.points - cost
+    ply.SkillData.skills[skillID] = (ply.SkillData.skills[skillID] or 0) +1
 
-    ply:ChatPrint(skill.name .. " Upgraded to level".. (current + 1))
+    ply:ChatPrint(skillInfo.name .. " Upgraded to level".. (currentLevel + 1))
+    SkillTrees:SaveAndSync(ply)
 
-    ply:SetPData("skilltrees", util.TableToJSON(ply.SkillData))
+    ply:SetPData("vtx_skilldata", util.TableToJSON(ply.SkillData))
 end)
+
+function SkillTrees:SaveAndSync(ply)
+    if not IsValid(ply) or not ply.SkillData then return end
+    local json = util.TableToJSON(ply.SkillData)
+    ply:SetPData("vtx_skilldata", json)
+
+    net.Start("vtx_skills_sync")
+        net.WriteTable(ply.SkillData)
+    net.Send(ply)
+end
 
 concommand.Add("vtx_skills_wipe_all", function(ply, cmd, args)
     -- 1. Permission Check
@@ -72,4 +95,23 @@ concommand.Add("vtx_skills_wipe_all", function(ply, cmd, args)
     end
 
     print("[SkillTrees] SUCCESS: All player skill data has been deleted from the database.")
+    SkillTrees:SaveAndSync(ply)
+end)
+
+concommand.Add("vtx_skills_give_points", function(ply, cmd, args)
+    local amount = tonumber(args[1] or 10)
+    local target = player
+    if IsValid(target) then 
+        target.SkillData = target.SkillData or { points = 0, skills = {} }
+        target.skillData.points = target.SkillData.points + amount
+        
+        target:ChatPrint("Debug Added " .. amount .. " points, new total" .. target.SkillData.points)
+        net.Start(vtx_update_skills)
+            net.WriteTable(target.SkillData)
+        net.Send(target)
+
+        if SkillTrees.SavePlayerData then
+            SkillTrees:SavePlayerData(target)
+        end
+    end
 end)
