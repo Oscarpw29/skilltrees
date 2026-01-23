@@ -3,7 +3,6 @@ util.AddNetworkString("vtx_skills_reset")
 
 net.Receive("vtx_skills_purchase", function(len, ply)
     local skillID = net.ReadString()
-    print("[Debug] Recieved purcahse request from".. ply:Nick().. " for " .. skillID)
     local skillInfo, categoryName = SkillTrees:GetSkill(skillID)
 
     if not skillInfo then return end
@@ -41,7 +40,6 @@ net.Receive("vtx_skills_purchase", function(len, ply)
     if ply.SkillData and ply.SkillData.skills and ply.SkillData.skills[skillID] then
         currentLevel = ply.SkillData.skills[skillID]
     end
-    print("[DEBUG] Comparing Level: ", currentLevel, " to Max: ", skillInfo.maxLevel)
     local cost = skillInfo.price or 1
     if currentLevel >= (skillInfo.maxLevel or 1) then ply:ChatPrint("You are already max level") return end
     if (ply.SkillData.points or 0) < cost then return end
