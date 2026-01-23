@@ -1,5 +1,5 @@
-surface.CreateFont("SkillTree_Title", { font = "Roboto", size = 24, weight = 800 })
-surface.CreateFont("SkillTree_Sub", { font = "Roboto", size = 16, weight = 400 })
+surface.CreateFont("SkillTree_Title", { font = "Roboto", size = 22, weight = 800 })
+surface.CreateFont("SkillTree_Sub", { font = "Roboto", size = 14, weight = 400 })
 
 local frame, layout, lastCategory, scroll
 
@@ -161,7 +161,26 @@ local function OpenSkillMenu()
         draw.SimpleText("SKILL PROGRESSION", "SkillTree_Title", 20, 30, Color(255, 255, 255), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
         local data = lp.SkillData
         local plyPoints = (data and data.points) or 0
+        local sd = LocalPlayer().SkillData or {}
+        local curXP = sd.xp or 0
+        local curLvl = sd.level or 1
+        local reqXP = math.floor(100 * math.pow(curLvl, 1.5))
+        local boxW, boxH = 240, 70
+        local posX, posY = w - boxW -20, h - boxH -20
+        draw.RoundedBox(8, posX, posY, boxW, boxH, Color(30,30,35,200))
+        surface.SetDrawColor(60, 60, 65, 255)
+        surface.DrawOutlinedRect(posX,posY,boxW,boxH)
         draw.SimpleText("POINTS: " .. plyPoints, "SkillTree_Sub", w - 60, 30, Color(100, 255, 100), TEXT_ALIGN_RIGHT, TEXT_ALIGN_CENTER)
+        draw.SimpleText("LEVEL " .. curLvl, "SkillTree_Title", posX + 15, posY +15, Color(150,150,150), TEXT_ALIGN_LEFT)
+        local xpText = curXP .. " / " .. reqXP .. "XP"
+        draw.SimpleText(xpText, "SkillTree_Title", posX + boxW - 15, posY + 15, Color(200,200,200),TEXT_ALIGN_RIGHT)
+        local barY = posY + 35
+
+        local barW, barH = boxW -30, 12
+        local barX, barY = posX + 15, posY + boxH -22
+        local progress = math.Clamp(curXP / reqXP, 0, 1)
+        draw.RoundedBox(4, barX, barY, barW, barH, Color(0,0,0,150))
+        draw.RoundedBox(4, barX, barY, barW * progress, barH, Color(155,89,182))
     end
 
     local closeBtn = vgui.Create("DButton", frame)

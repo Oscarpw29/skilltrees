@@ -109,6 +109,38 @@ function SkillTrees:ApplyBuffs(ply)
     
 end
 
+local base_xp = 100
+local xp_exponent = 1.5
+
+function SkillTrees:GetRequiredXP(level)
+    if level <= 0 then return BASE_XP end
+    return math.floor(base_xp * math.pow(level,xp_exponent))
+end
+
+function SkillTrees:AddXP(ply, amount)
+    if not IsValid(ply) or not ply.SkillData then return end
+
+    local multiplier = self:GetPlayerMultiplier(ply)
+    local finalAmount = math.Round(amount*multiplier)
+
+    ply.SkillData.xp = (ply.SkillData.xp or 0) + amount
+    ply.SkillData.level = ply.SkillData.level or 1
+
+    local required = self:GetRequiredXP(ply.SkillData.level)
+
+    while ply.SkillData.xp >= required do
+        ply.SkillData.xp = ply.SkillData.xp - required
+        ply.SkillData.level = ply.SkillData.level + 1
+        ply.SkillData.points = (ply.SkillData.Points or 0) + 1
+
+        required = self:GetRequiredXP(ply.SkillData.level)
+
+        ply:ChatPrint("[VORTEX] LEVEL UP! You are now level ".. ply.SkillData.level)
+        ply:EmitSound("garrysmod/save_load1.wav")
+    end
+    self:SaveAndSync(ply)
+end
+
 concommand.Add("vtx_skills_wipe_all", function(ply, cmd, args)
     -- 1. Permission Check
     -- Allow execution from Server Console (ply is NULL) or SuperAdmin

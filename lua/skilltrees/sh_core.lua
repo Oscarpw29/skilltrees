@@ -75,6 +75,20 @@ SkillTrees.Buffs = {
     ["armor_50"] = { armor = 50 }
 }
 
+SkillTrees.RankMultipliers = {
+    ["superadmin"] = 2.0,
+    ["user"] = 1.0,
+}
+
+function SkillTrees:GetPlayerMultiplier(ply)
+    if not IsValid(ply) then return 1 end
+
+    local rank = ply:GetUserGroup()
+    return SkillTrees.RankMultipliers[rank] or 1.0
+end
+
+SkillTrees.NPC_XP_REWARD = 5
+
 function SkillTrees:CalculateBuffs(ply)
     local stats = { hp = 0, speed = 0, armor = 0 }
     if not ply.SkillData or not ply.SkillData.skills then return stats end
