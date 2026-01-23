@@ -1,4 +1,5 @@
 util.AddNetworkString("vtx_skills_purchase")
+util.AddNetworkString("vtx_skills_reset")
 
 net.Receive("vtx_skills_purchase", function(len, ply)
     local skillID = net.ReadString()
@@ -54,6 +55,24 @@ net.Receive("vtx_skills_purchase", function(len, ply)
     ply:SetPData("vtx_skilldata", util.TableToJSON(ply.SkillData))
 end)
 
+net.Receive("vtx_skills_reset", function(len, ply)
+    if not IsValid(ply) or not ply.SkillData then return end
+    local totalRefund = 0
+    for skillID, level in pairs(ply.SkillData.skills) do
+        local skillInfo = SkillTrees:GetSkill(skillID)
+        if skillInfo then
+            local cost = skillInfo.price or 1
+            totalRefund = totalRefund + (cost*level)
+        end
+    end
+    ply.SkillData.points = ply.SkillData.points + totalRefund
+    ply.SkillData.skills = {}
+    
+    SkillTrees:SaveAndSync(ply)
+    hook.Run("SkillTree_UpdateStats", ply)
+    ply:ChatPrint("[VORTEX] SKills Reset! Refunded ".. totalRefund .."points.")
+end)
+
 function SkillTrees:SaveAndSync(ply)
     if not IsValid(ply) or not ply.SkillData then return end
     local json = util.TableToJSON(ply.SkillData)
@@ -62,6 +81,32 @@ function SkillTrees:SaveAndSync(ply)
     net.Start("vtx_skills_sync")
         net.WriteTable(ply.SkillData)
     net.Send(ply)
+end
+
+function SkillTrees:ApplyBuffs(ply)
+    if not IsValid(ply) then return  end
+
+    local buffs = SkillTrees:CalculateBuffs(ply)
+
+    local baseHP = (ply.GetJobTable and ply:GetJobTable().maxhealth) or 100
+    local baseArmor = (ply.GetJobTable and ply:GetJobTable().armor) or 50
+    local baseSpeed = (ply.GetJobTable and ply:GetJobTable().walkspeed) or 200
+    local baseRun = (ply.GetJobTable and ply:GetJobTable().runspeed) or 400
+
+    local newMaxHP = baseHP + buffs.hp
+    local newArmor = baseArmor + buffs.armor
+    local newWalk = baseSpeed + buffs.speed
+    local newRun = baseRun + buffs.speed
+    
+    ply:SetMaxHealth(newMaxHP)
+    ply:SetNWInt("MaxArmor", newArmor)
+    ply:SetWalkSpeed(newWalk)
+    ply:SetRunSpeed(newRun)
+
+    if ply:Armor() < buffs.armor then
+        ply:SetArmor(buffs.armor)
+    end
+    
 end
 
 concommand.Add("vtx_skills_wipe_all", function(ply, cmd, args)
@@ -100,18 +145,19 @@ end)
 
 concommand.Add("vtx_skills_give_points", function(ply, cmd, args)
     local amount = tonumber(args[1] or 10)
-    local target = player
-    if IsValid(target) then 
-        target.SkillData = target.SkillData or { points = 0, skills = {} }
-        target.skillData.points = target.SkillData.points + amount
+    local target = ply
+    if not IsValid(target) then return end 
+    target.SkillData = target.SkillData or { points = 0, skills = {} }
+    target.SkillData.points = target.SkillData.points + amount
+       
+    target:ChatPrint("Debug Added " .. amount .. " points, new total" .. target.SkillData.points)
         
-        target:ChatPrint("Debug Added " .. amount .. " points, new total" .. target.SkillData.points)
-        net.Start(vtx_update_skills)
+
+    if SkillTrees and SkillTrees.SaveAndSync then
+        SkillTrees:SaveAndSync(target)
+    else
+        net.Start("vtx_update_skills")
             net.WriteTable(target.SkillData)
         net.Send(target)
-
-        if SkillTrees.SavePlayerData then
-            SkillTrees:SavePlayerData(target)
-        end
     end
 end)

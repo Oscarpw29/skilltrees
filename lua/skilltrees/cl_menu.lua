@@ -116,7 +116,7 @@ function ShowSkills(catName, skillsTable)
             end
             if cost > currentPoints then
                 surface.PlaySound("buttons/button10.wav")
-                chat.AddText(Color(255,50,50),"[Skills] You need" .. (cost-currentPoints) .. "more points")
+                chat.AddText(Color(255,50,50),"[Skills] You need " .. (cost-currentPoints) .. " more point(s)")
                 return 
             end
             if info.requirement then
@@ -201,6 +201,29 @@ local function OpenSkillMenu()
     layout:SetSpaceX(15)
     layout:InvalidateParent()
     scroll:InvalidateLayout()
+
+    local resetBtn = vgui.Create("DButton", frame)
+    resetBtn:SetSize(100,25)
+    resetBtn:SetPos(10, frame:GetTall()-35)
+    resetBtn:SetText("")
+
+    resetBtn.Paint = function(self, w, h)
+        local col = self:IsHovered() and Color(150, 50, 50) or Color(100, 30, 30)
+        draw.RoundedBox(4, 0, 0, w, h, col)
+        draw.SimpleText("RESET SKILLS", "DermaDefault", w/2, h/2, Color(255,255,255),TEXT_ALIGN_CENTER,TEXT_ALIGN_CENTER)
+    end
+
+    resetBtn.DoClick = function ()
+        Derma_Query(
+            "Are you sure you want to reset all skills?",
+            "Reset Confirmation",
+            "Yes, Reset", function()
+                net.Start("vtx_skills_reset")
+                net.SendToServer()
+            end,
+            "No, Cancel", function() end
+        )        
+    end
 
     ShowCategories()
 end

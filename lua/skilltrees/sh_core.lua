@@ -34,19 +34,19 @@ SkillTrees.Tree = {
         Color = Color(138,198,209),
 
         Skills = {
-            ["health_boost_1"] = {
+            ["health_25"] = {
                 name = "Health Boost I",
                 description = "Increase base health by 25.",
                 price = 1,
                 maxLevel = 3,
                 requirement = nil,
             },
-            ["health_boost_2"] = {
+            ["health_50"] = {
                 name = "Health Boost II",
                 description = "Increase base health by 50.",
                 price = 2,
                 maxLevel = 2,
-                requirement = "health_boost_1",
+                requirement = "health_25",
             },
             
         }
@@ -58,7 +58,7 @@ SkillTrees.Tree = {
         Color = Color(50,255,67),
 
         Skills = {
-            ["push_1"] = {
+            ["armor_50"] = {
                 name = "Force Push",
                 description = "Knock back enemies infront of you",
                 price = 3,
@@ -67,6 +67,28 @@ SkillTrees.Tree = {
         }
     }
 }
+
+SkillTrees.Buffs = {
+    ["health_25"] = { hp = 25 },
+    ["health_50"] = { hp = 50 },
+    ["armor_25"] = { armor = 25 },
+    ["armor_50"] = { armor = 50 }
+}
+
+function SkillTrees:CalculateBuffs(ply)
+    local stats = { hp = 0, speed = 0, armor = 0 }
+    if not ply.SkillData or not ply.SkillData.skills then return stats end
+
+    for skillID, level in pairs(ply.SkillData.skills) do
+        local buff = SkillTrees.Buffs[skillID]
+        if buff then
+            if buff.hp then stats.hp = stats.hp + (buff.hp * level) end
+            if buff.speed then stats.speed = stats.speed + (buff.speed * level) end
+            if buff.armor then stats.armor = stats.armor + (buff.armor * level) end
+        end
+    end
+    return stats
+end
 
 function SkillTrees:GetSkill(skillID)
     for catName, catData in pairs(SkillTrees.Tree) do

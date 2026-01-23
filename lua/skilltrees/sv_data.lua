@@ -6,27 +6,30 @@ end
 local PDATA_KEY = "vtx_skilldata"
 
 hook.Add("PlayerInitialSpawn", "SkillTrees_Load", function(ply)
-    local timerID = "SkillTree_Load_" .. ply:SteamID64()
-    timer.Create(timerID, 1, 5, function()
-        if not IsValid(ply) then timer.Remove(timerID) return end
+    timer.Simple(2, function()
+        if not IsValid(ply) then return end
 
         local data = ply:GetPData(PDATA_KEY, nil)
-
-        if data then
-            ply.SkillData = util.JSONToTable(data)
+        
+        if data and data ~= "" then
+            local decoded = util.JSONToTable(data)
+            if decoded then
+                ply.SkillData = decoded
+                print("[Skills] Loaded data for " .. ply:Nick())
+            end
         end
 
         if not ply.SkillData then 
-            ply.SkillData = { points = 5, skills = {}}
+            ply.SkillData = { points = 10, skills = {} }
+            print("[Skills] New player detected: " .. ply:Nick())
         end
         
-        if ply.SkillData and type(ply.SkillData) == "table" then
-            net.Start("vtx_skills_sync")
+        -- Final Sync
+        net.Start("vtx_skills_sync")
             net.WriteTable(ply.SkillData)
-            net.Send(ply)
-            print("[Vortex Skill Trees] Data Synced for ", ply:Nick())
-            timer.Remove(timerID)
-        end
+        net.Send(ply)
+        
+        SkillTrees:ApplyBuffs(ply)
     end)
 end)
 
