@@ -1,20 +1,25 @@
 surface.CreateFont("SkillTree_Title", { font = "Roboto", size = 22, weight = 800 })
 surface.CreateFont("SkillTree_Sub", { font = "Roboto", size = 14, weight = 400 })
 
-local frame, layout, lastCategory, scroll
+local MainMenu, layout, lastCategory, scroll
 
 -- This function clears the layout and shows categories
 local function ShowCategories()
-    if not IsValid(layout) then return end
+    if not IsValid(MainMenu) or not IsValid(layout) then return end
     layout:Clear()
-    if IsValid(frame.backBtn) then frame.backBtn:SetVisible(false) end
-
+    if IsValid(MainMenu.backBtn) then MainMenu.backBtn:SetVisible(false) end
 
     layout:GetParent():InvalidateLayout(true)
-
+    MainMenu:GetParent():InvalidateLayout(true)
+    
     local wide = layout:GetWide()
+    
+    if wide <= 0 then
+        wide = MainMenu:GetWide() -40
+    end
+
     if wide < 100 then
-        wide = frame:GetWide() - 40
+        wide = MainMenu:GetWide() - 40
     else
         wide = wide - 20
     end
@@ -22,6 +27,7 @@ local function ShowCategories()
     -- Loop through the top-level keys (Combat, Utility, etc.)
     for catName, catData in pairs(SkillTrees.Tree) do
         -- Access Check
+        print("Creating button for category".. catName)
         if catData.Teams and not table.HasValue(catData.Teams, LocalPlayer():Team()) then continue end
 
         local catBtn = layout:Add("DButton")
@@ -47,13 +53,13 @@ function ShowSkills(catName, skillsTable)
     if not IsValid(layout) or not IsValid(scroll) then return end
     lastCategory = catName
     layout:Clear()
-    if IsValid(frame.backBtn) then 
-        frame.backBtn:SetVisible(true) 
-        frame.backBtn:MoveToFront()
+    if IsValid(MainMenu.backBtn) then 
+        MainMenu.backBtn:SetVisible(true) 
+        MainMenu.backBtn:MoveToFront()
     end
 
     local totalWide = layout:GetWide()
-    if totalWide < 100 then totalWide = frame:GetWide() - 40 end
+    if totalWide < 100 then totalWide = MainMenu:GetWide() - 40 end
 
     local cardWide = (totalWide - 20) / 2
     local scrollPos = scroll:GetVBar():GetScroll()
@@ -142,29 +148,31 @@ function ShowSkills(catName, skillsTable)
     lastCategory = catName
 end
 
-local function OpenSkillMenu()
-    local lp = LocalPlayer() 
+function OpenSkillMenu()
+    local lp = LocalPlayer()
+    local sd = LocalPlayer().SkillData or {}
+    local curLvl = sd.level or 1
+    local reqXP = math.floor(100 * math.pow(curLvl, 1.5)) 
 
-    frame = vgui.Create("DFrame")
-    frame:SetSize(ScrW() * 0.6, ScrH() * 0.7)
-    frame:SetTitle("")
-    frame:Center()
-    frame:MakePopup()
+    if IsValid(MainMenu) then MainMenu:Remove() end
 
-    frame:ShowCloseButton(false)
-    frame:SetDraggable(true)
+    MainMenu = vgui.Create("DFrame")
+    MainMenu:SetSize(ScrW() * 0.6, ScrH() * 0.7)
+    MainMenu:SetTitle("")
+    MainMenu:Center()
+    MainMenu:MakePopup()
 
-    frame.Paint = function(self, w, h)
+    MainMenu:ShowCloseButton(false)
+    MainMenu:SetDraggable(true)
+
+    MainMenu.Paint = function(self, w, h)
         draw.RoundedBox(8, 0, 0, w, h, Color(20, 20, 25, 255))
         -- Header Bar
         draw.RoundedBoxEx(8, 0, 0, w, 50, Color(35, 35, 40, 255), true, true, false, false)
         draw.SimpleText("SKILL PROGRESSION", "SkillTree_Title", 20, 30, Color(255, 255, 255), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
         local data = lp.SkillData
         local plyPoints = (data and data.points) or 0
-        local sd = LocalPlayer().SkillData or {}
         local curXP = sd.xp or 0
-        local curLvl = sd.level or 1
-        local reqXP = math.floor(100 * math.pow(curLvl, 1.5))
         local boxW, boxH = 240, 70
         local posX, posY = w - boxW -20, h - boxH -20
         draw.RoundedBox(8, posX, posY, boxW, boxH, Color(30,30,35,200))
@@ -183,9 +191,9 @@ local function OpenSkillMenu()
         draw.RoundedBox(4, barX, barY, barW * progress, barH, Color(155,89,182))
     end
 
-    local closeBtn = vgui.Create("DButton", frame)
+    local closeBtn = vgui.Create("DButton", MainMenu)
     closeBtn:SetSize(40, 40)
-    closeBtn:SetPos(frame:GetWide() - 45, 10)
+    closeBtn:SetPos(MainMenu:GetWide() - 45, 10)
     closeBtn:SetText("")
     closeBtn.Paint = function(self, w,h)
         if self:IsHovered() then
@@ -193,24 +201,26 @@ local function OpenSkillMenu()
         end
         draw.SimpleText("X","SkillTree_Title",w/2,h/2, Color(255,255,255),TEXT_ALIGN_CENTER,TEXT_ALIGN_CENTER)
     end
-    closeBtn.DoClick = function() frame:Close() end
+    closeBtn.DoClick = function(self) 
+       MainMenu:Close() 
+    end
 
-    frame.backBtn = vgui.Create("DButton", frame)
-    frame.backBtn:SetSize(80, 26)
-    frame.backBtn:SetPos((frame:GetWide() /2) -40, 12)
-    frame.backBtn:SetText("")
-    frame.backBtn:SetVisible(false)
-    frame.backBtn.Paint = function(self, w, h)
+    MainMenu.backBtn = vgui.Create("DButton", MainMenu)
+    MainMenu.backBtn:SetSize(80, 26)
+    MainMenu.backBtn:SetPos((MainMenu:GetWide() /2) -40, 12)
+    MainMenu.backBtn:SetText("")
+    MainMenu.backBtn:SetVisible(false)
+    MainMenu.backBtn.Paint = function(self, w, h)
         local col = self:IsHovered() and Color(80,80,100) or Color(50,50,60)
         draw.RoundedBox(4, 0, 0, w, h, col)
         draw.SimpleText("< BACK", "DermaDefaultBold", w/2, h/2, Color(255,255,255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
     end
-    frame.backBtn.DoClick = function()
+    MainMenu.backBtn.DoClick = function()
+        MainMenu.backBtn:SetVisible(false)
         ShowCategories()
-        frame.backBtn:SetVisible(false)
     end
 
-    scroll = vgui.Create("DScrollPanel", frame)
+    scroll = vgui.Create("DScrollPanel", MainMenu)
     scroll:Dock(FILL)
     scroll:DockMargin(20, 60, 20, 20)
 
@@ -221,9 +231,9 @@ local function OpenSkillMenu()
     layout:InvalidateParent()
     scroll:InvalidateLayout()
 
-    local resetBtn = vgui.Create("DButton", frame)
+    local resetBtn = vgui.Create("DButton", MainMenu)
     resetBtn:SetSize(100,25)
-    resetBtn:SetPos(10, frame:GetTall()-35)
+    resetBtn:SetPos(10, MainMenu:GetTall()-35)
     resetBtn:SetText("")
 
     resetBtn.Paint = function(self, w, h)
@@ -247,12 +257,15 @@ local function OpenSkillMenu()
     ShowCategories()
 end
 
-concommand.Add("vtx_skills_menu", OpenSkillMenu)
+net.Receive("vtx_skills_menu", function()
+    if IsValid(MainMenu) and MainMenu:IsVisible() then return end
+    OpenSkillMenu()
+end)
 
 net.Receive("vtx_skills_sync", function()
     local data = net.ReadTable()
     LocalPlayer().SkillData = data
-    if IsValid(frame) then
+    if IsValid(MainMenu) then
         if lastCategory then
             ShowSkills(lastCategory, SkillTrees.Tree[lastCategory].Skills)
         else

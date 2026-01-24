@@ -24,6 +24,7 @@
 --         category = "jedi"
 --     }
 -- }
+SkillTrees = SkillTrees or {}
 
 SkillTrees.Config = {}
 
@@ -93,9 +94,10 @@ function SkillTrees:CalculateBuffs(ply)
     local stats = { hp = 0, speed = 0, armor = 0 }
     if not ply.SkillData or not ply.SkillData.skills then return stats end
 
-    for skillID, level in pairs(ply.SkillData.skills) do
+    for skillID, level in pairs(ply.SkillData.Skills) do
         local buff = SkillTrees.Buffs[skillID]
         if buff then
+            local lvl = isnumber(lvl) and level or 1
             if buff.hp then stats.hp = stats.hp + (buff.hp * level) end
             if buff.speed then stats.speed = stats.speed + (buff.speed * level) end
             if buff.armor then stats.armor = stats.armor + (buff.armor * level) end

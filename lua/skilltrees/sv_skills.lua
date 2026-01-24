@@ -1,5 +1,6 @@
 util.AddNetworkString("vtx_skills_purchase")
 util.AddNetworkString("vtx_skills_reset")
+util.AddNetworkString("vtx_skills_menu")
 
 net.Receive("vtx_skills_purchase", function(len, ply)
     local skillID = net.ReadString()
@@ -82,7 +83,7 @@ function SkillTrees:SaveAndSync(ply)
 end
 
 function SkillTrees:ApplyBuffs(ply)
-    if not IsValid(ply) then return  end
+    if not IsValid(ply) or not ply.SkillData or not (ply.SkillData.Skills or ply.SkillData.skills) then return end
 
     local buffs = SkillTrees:CalculateBuffs(ply)
 
