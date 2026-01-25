@@ -10,36 +10,40 @@ local function ShowCategories()
     if IsValid(MainMenu.backBtn) then MainMenu.backBtn:SetVisible(false) end
 
     layout:GetParent():InvalidateLayout(true)
-    MainMenu:GetParent():InvalidateLayout(true)
     
     local wide = layout:GetWide()
-    
-    if wide <= 0 then
-        wide = MainMenu:GetWide() -40
-    end
+    if wide <= 100 then wide = MainMenu:GetWide() - 40 else wide = wide - 20 end
 
-    if wide < 100 then
-        wide = MainMenu:GetWide() - 40
-    else
-        wide = wide - 20
-    end
+    -- Get the player's category once to save performance
+    local myJobTable = LocalPlayer():getJobTable()
+    local myCategory = myJobTable and myJobTable.category or "Unknown"
+    local myRank = LocalPlayer():GetUserGroup()
+    local myID = LocalPlayer():SteamID()
 
-    -- Loop through the top-level keys (Combat, Utility, etc.)
     for catName, catData in pairs(SkillTrees.Tree) do
-        -- Access Check
-        print("Creating button for category".. catName)
-        if catData.Teams and not table.HasValue(catData.Teams, LocalPlayer():Team()) then continue end
+        local isDefaultTree = (catData.Teams == nil)
+        -- Access Check: 
+        -- If catName matches the player's job category, or they are in the Teams table
+        local hasTeamAccess = catData.Teams and table.HasValue(catData.Teams, LocalPlayer():Team())
+        local hasCategoryAccess = (catName == myCategory)
+        local hasRankAccess = catData.Ranks and table.HasValue(catData.Ranks, myRank)
+        local hasDirectAccess = catData.SteamIDs and table.HasValue(catData.SteamIds, myID)
+
+        -- If they don't have either, skip it
+        if not (isDefaultTree or hasTeamAccess or hasRankAccess or hasDirectAccess or hasCategoryAccess) then continue end
 
         local catBtn = layout:Add("DButton")
-        catBtn:SetSize(wide , 60)
+        catBtn:SetSize(wide, 60)
         catBtn:SetText("")
         catBtn.Paint = function(self, w, h)
             local col = self:IsHovered() and Color(60, 60, 70) or Color(40, 40, 50)
             draw.RoundedBox(4, 0, 0, w, h, col)
-            draw.SimpleText(catName:upper(), "SkillTree_Sub", w/2, h/2, Color(255, 255, 255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+            
+            -- Use the actual category color if you defined one in the table
+            local textColor = catData.Color or Color(255, 255, 255)
+            draw.SimpleText(catName:upper(), "SkillTree_Sub", w/2, h/2, textColor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
         end
         
-        -- When clicked, pass the WHOLE catData table to the next function
         catBtn.DoClick = function() 
             surface.PlaySound("buttons/lightswitch2.wav")
             ShowSkills(catName, catData.Skills) 

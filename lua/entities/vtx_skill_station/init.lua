@@ -3,7 +3,7 @@ AddCSLuaFile("shared.lua")
 include("shared.lua")
 
 function ENT:Initialize()
-    self:SetModel("models/props_c17/gravestone_cross001b.mdl")
+    self:SetModel("models/epsilon/cwa_furniture/coruscantlowclass/eps_coruscantlowclass_smallworkstation.mdl")
     self:SetSolid(SOLID_VPHYSICS)
     self:SetMoveType(MOVETYPE_VPHYSICS)
     self:DrawShadow(true)

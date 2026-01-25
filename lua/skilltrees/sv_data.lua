@@ -6,6 +6,15 @@ end
 local PDATA_KEY = "vtx_skilldata"
 
 hook.Add("PlayerInitialSpawn", "SkillTrees_Load", function(ply)
+    local steamid = ply:SteamID64()
+
+    ply.SkillData = {
+        xp = 0,
+        level = 1,
+        points = 0,
+        skills = {}
+    }
+
     timer.Simple(2, function()
         if not IsValid(ply) then return end
 
@@ -16,6 +25,7 @@ hook.Add("PlayerInitialSpawn", "SkillTrees_Load", function(ply)
             if decoded then
                 ply.SkillData = decoded
                 print("[Skills] Loaded data for " .. ply:Nick())
+                ply.SkillData.skills = ply.SkillData.skills or {}
             end
         end
 
@@ -25,34 +35,26 @@ hook.Add("PlayerInitialSpawn", "SkillTrees_Load", function(ply)
         end
         
         -- Final Sync
-        net.Start("vtx_skills_sync")
-            net.WriteTable(ply.SkillData)
-        net.Send(ply)
-        
-        SkillTrees:ApplyBuffs(ply)
+        if SkillTrees.SaveAndSync then
+            SkillTrees:SaveAndSync(ply)
+        else
+            net.Start("vtx_skills_sync")
+                net.WriteTable(ply.SkillData)
+            net.Send(ply)
+        end
+    SkillTrees:ApplyBuffs(ply)
     end)
 end)
 
-concommand.Add("vtx_skills_reset", function(ply, cmd, args)
-    -- Check if it's a console command or if the player is Admin
-    if IsValid(ply) and not ply:IsSuperAdmin() then return end
-
-    local target = ply
-    -- If you type 'vtx_skills_reset playerName', it resets them instead
-    if args[1] then
-        target = player.GetByText(args[1])
-    end
-
-    if IsValid(target) then
-        -- Wipe the PData entry
-        target:RemovePData("vtx_skilldata")
-        
-        -- Reset the live table so the change happens immediately
-        target.SkillData = {
-            points = 5,
-            skills = {}
-        }
-        
-        target:ChatPrint("Skill data has been reset!")
-    end
+hook.Add("OnPlayerChangedTeam", "Vortex_Skills_TeamSwitch", function(ply, oldTeam, newTeam)
+    -- We use a slightly longer delay (1 second)
+    -- This allows MC Ranks to finish its buggy network messages first
+    timer.Simple(1, function()
+        if IsValid(ply) then
+            -- Safely refresh the skill buffs
+            if SkillTrees and SkillTrees.ApplyBuffs then
+                SkillTrees:ApplyBuffs(ply)
+            end
+        end
+    end)
 end)
