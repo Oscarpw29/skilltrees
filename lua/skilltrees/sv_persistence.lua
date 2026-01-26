@@ -1,4 +1,5 @@
 local folder = "vortex_skills"
+util.AddNetworkString("Vortex_AdminAction")
 
 if not file.Exists(folder, "DATA") then
     file.CreateDir(folder)
@@ -92,4 +93,16 @@ hook.Add("Vortex_SaveStations", "ExecuteSave", function()
     end
 
     SkillTrees:SaveStations()
+end)
+
+net.Receive("Vortex_AdminAction", function(len, ply)
+    if not ply:IsSuperAdmin() then return end
+    local action = net.ReadString()
+    if action == "save" then
+        hook.Run("Vortex_SaveStations")
+        ply:ChatPrint("[Vortex Stations saved to file.]")
+    elseif action == "clear" then 
+        hook.Run("Vortex_ClearStations")
+        ply:ChatPrint("[Vortex] Stations cleared from map.") 
+    end    
 end)

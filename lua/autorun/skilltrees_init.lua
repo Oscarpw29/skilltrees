@@ -3,6 +3,7 @@ if SERVER then
     AddCSLuaFile("skilltrees/sh_core.lua")
     AddCSLuaFile("skilltrees/cl_menu.lua")
     AddCSLuaFile("skilltrees/cl_hud.lua")
+    AddCSLuaFile("autorun/client/cl_vortex_util.lua")
 
     -- 2. Load the server-side files
     include("skilltrees/sh_core.lua")
@@ -17,4 +18,5 @@ if CLIENT then
     include("skilltrees/sh_core.lua")
     include("skilltrees/cl_menu.lua")
     include("skilltrees/cl_hud.lua")
+    include("autorun/client/cl_vortex_util.lua")
 end

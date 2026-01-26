@@ -1,0 +1,22 @@
+hook.Add("PopulateToolMenu", "Vortex_AdminUtilities", function()
+    spawnmenu.AddToolMenuOption("Utilities", "Vortex Skills", "Vortex_StationAdmin", "Station Management", "", "", function(panel)
+        panel:ClearControls()
+        panel:Help("Direct Hook Administration")
+
+        local saveBtn = panel:Button("Save Stations", "")
+        saveBtn.DoClick = function()
+            net.Start("Vortex_AdminAction")
+                net.WriteString("save")
+            net.SendToServer()
+            surface.PlaySound("buttons/button14.wav")            
+        end
+        local clearBtn = panel:Button("Clear Stations", "")
+        clearBtn.DoClick = function()
+            Derma_Query("Clear all stations?", "Confirmation?", "Yes", function()
+                net.Start("Vortex_AdminAction")
+                    net.WriteString("clear")
+                net.SendToServer()
+            end, "No")            
+        end
+    end)
+end)
