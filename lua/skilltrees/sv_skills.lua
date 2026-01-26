@@ -174,6 +174,40 @@ concommand.Add("vtx_skills_give_points", function(ply, cmd, args)
     end
 end)
 
+concommand.Add("vtx_skills_wipe_all", function(ply, cmd, args)
+    -- 1. Permission Check
+    -- Allow execution from Server Console (ply is NULL) or SuperAdmin
+    if IsValid(ply) then 
+        ply:PrintMessage(HUD_PRINTCONSOLE, "[Vortex] This command can only be run from the SERVER console for security.")
+        return 
+    end
+
+    -- 2. Confirmation Check
+    -- Prevents accidental wipes. Must type: vtx_skills_wipe_all confirm
+    if args[1] ~= "confirm" then
+        local msg = "WARNING: This will delete ALL skill levels and points for EVERY player. Type 'vtx_skills_wipe_all confirm' to proceed."
+        if IsValid(ply) then ply:ChatPrint(msg) else print(msg) end
+        return
+    end
+
+    -- 3. The Database Wipe
+    -- This removes the entry from the global PData table in sv.db
+    sql.Query("DELETE FROM playerpdata WHERE infoid = 'vtx_skilldata'")
+
+    -- 4. Immediate Live Reset
+    -- We must reset players currently on the server so they don't overwrite the wipe when they leave
+    for _, target in ipairs(player.GetAll()) do
+        target.SkillData = {
+            points = 0, -- Or whatever your starting points are
+            skills = {}
+        }
+        target:ChatPrint("[SkillTrees] An administrator has wiped all global skill data.")
+    end
+
+    print("[SkillTrees] SUCCESS: All player skill data has been deleted from the database.")
+    SkillTrees:SaveAndSync(ply)
+end)
+
 hook.Add("ArcCW_ModifyRPM", "Vortex_Skills_FireRate", function(wep, rpm)
     local ply = wep:GetOwner()
     if not IsValid(ply) or not ply:IsPlayer() or not ply.SkillData then return end
