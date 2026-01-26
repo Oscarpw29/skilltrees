@@ -30,7 +30,7 @@ SkillTrees.Config = {}
 
 SkillTrees.Tree = {
     ["3rd Systems Army"] = {
-        Teams = {TEAM_3RDCO, TEAM_3RDXO, TEAM_3RDOFF, TEAM_3RDNCO, TEAM_3RDTRP, TEAM_3RD104, TEAM_3RD501, TEAM_3RD327, TEAM_3RD41},
+        Teams = {TEAM_3RDCO, TEAM_3RDXO, TEAM_3RDOFF, TEAM_3RDNCO, TEAM_3RDTRP, TEAM_3RD104, TEAM_3RD501, TEAM_3RD327, TEAM_3RD41, "Marshal Commander"},
         Ranks = {"superadmin"},
         Color = Color(138,198,209),
         Skills = {
@@ -221,7 +221,18 @@ SkillTrees.Buffs = {
 }
 
 SkillTrees.RankMultipliers = {
-    ["superadmin"] = 2.0,
+    ["superadmin"] = 5.0,
+    ["Management"] = 4.0,
+    ["Senior Admin"] = 3.0,
+    ["Admin"] = 2.0,
+    ["INSANE VIP"] = 5.0,
+    ["Legendary VIP"] = 4.5,
+    ["Beskar VIP"] = 4.0,
+    ["Diamond VIP"] = 3.5,
+    ["Platinum VIP"] = 3,
+    ["Gold VIP"] = 2.5,
+    ["Silver VIP"] = 2.0,
+    ["Bronze VIP"] = 1.5,
     ["user"] = 1.0,
 }
 

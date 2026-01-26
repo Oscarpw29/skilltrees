@@ -14,24 +14,58 @@ local function ShowCategories()
     local wide = layout:GetWide()
     if wide <= 100 then wide = MainMenu:GetWide() - 40 else wide = wide - 20 end
 
-    -- Get the player's category once to save performance
+    -- Local variables for comparison
+    local myTeam = LocalPlayer():Team()
+    local myJobName = team.GetName(myTeam)
     local myJobTable = LocalPlayer():getJobTable()
     local myCategory = myJobTable and myJobTable.category or "Unknown"
     local myRank = LocalPlayer():GetUserGroup()
     local myID = LocalPlayer():SteamID()
 
+    -- Ensure the base table exists before looping
+    if not SkillTrees or not SkillTrees.Tree then return end
+
     for catName, catData in pairs(SkillTrees.Tree) do
+        -- 1. Default Access (If no Teams table is defined, everyone sees it)
         local isDefaultTree = (catData.Teams == nil)
-        -- Access Check: 
-        -- If catName matches the player's job category, or they are in the Teams table
-        local hasTeamAccess = catData.Teams and table.HasValue(catData.Teams, LocalPlayer():Team())
+        
+        -- 2. Team Access (Manual Loop to avoid table.HasValue crash)
+        local hasTeamAccess = false
+        if catData.Teams and istable(catData.Teams) then
+            for _, val in pairs(catData.Teams) do
+                -- Checks for BOTH the Team ID number and the Job Name string
+                if val == myTeam or val == myJobName then
+                    hasTeamAccess = true
+                    break
+                end
+            end
+        end
+
+        -- 3. Category Access
         local hasCategoryAccess = (catName == myCategory)
-        local hasRankAccess = catData.Ranks and table.HasValue(catData.Ranks, myRank)
-        local hasDirectAccess = catData.SteamIDs and table.HasValue(catData.SteamIds, myID)
+        
+        -- 4. Rank Access (Safe Manual Loop)
+        local hasRankAccess = false
+        if catData.Ranks and istable(catData.Ranks) then
+            for _, r in pairs(catData.Ranks) do
+                if r == myRank then hasRankAccess = true break end
+            end
+        end
 
-        -- If they don't have either, skip it
-        if not (isDefaultTree or hasTeamAccess or hasRankAccess or hasDirectAccess or hasCategoryAccess) then continue end
+        -- 5. Direct SteamID Access (Safe Manual Loop)
+        local hasDirectAccess = false
+        if catData.SteamIDs and istable(catData.SteamIDs) then
+            for _, id in pairs(catData.SteamIDs) do
+                if id == myID then hasDirectAccess = true break end
+            end
+        end
 
+        -- Final Logic Gate: If user fails ALL checks, skip this category
+        if not (isDefaultTree or hasTeamAccess or hasRankAccess or hasDirectAccess or hasCategoryAccess) then 
+            continue 
+        end
+
+        -- Create the UI Button
         local catBtn = layout:Add("DButton")
         catBtn:SetSize(wide, 60)
         catBtn:SetText("")
@@ -39,14 +73,14 @@ local function ShowCategories()
             local col = self:IsHovered() and Color(60, 60, 70) or Color(40, 40, 50)
             draw.RoundedBox(4, 0, 0, w, h, col)
             
-            -- Use the actual category color if you defined one in the table
             local textColor = catData.Color or Color(255, 255, 255)
             draw.SimpleText(catName:upper(), "SkillTree_Sub", w/2, h/2, textColor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
         end
         
         catBtn.DoClick = function() 
             surface.PlaySound("buttons/lightswitch2.wav")
-            ShowSkills(catName, catData.Skills) 
+            -- Pass an empty table if Skills is nil to prevent the next menu from crashing
+            ShowSkills(catName, catData.Skills or {}) 
         end
     end
     lastCategory = nil

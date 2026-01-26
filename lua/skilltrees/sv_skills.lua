@@ -120,17 +120,17 @@ end
 function SkillTrees:AddXP(ply, amount)
     if not IsValid(ply) or not ply.SkillData then return end
 
-    local multiplier = self:GetPlayerMultiplier(ply)
+    local multiplier = self:GetPlayerMultipliers(ply)
     local finalAmount = math.Round(amount*multiplier)
 
-    ply.SkillData.xp = (ply.SkillData.xp or 0) + amount
+    ply.SkillData.xp = (ply.SkillData.xp or 0) + finalAmount
     ply.SkillData.level = ply.SkillData.level or 1
 
     local required = self:GetRequiredXP(ply.SkillData.level)
     while ply.SkillData.xp >= required do
         ply.SkillData.xp = ply.SkillData.xp - required
         ply.SkillData.level = ply.SkillData.level + 1
-        if ply.SkillData.level > 0 and (ply.SkillData.level % 5 == 0) then
+        if ply.SkillData.level > 0 and (ply.SkillData.level % 3 == 0) then
             ply.SkillData.points = (ply.SkillData.points or 0) + 1
             ply:ChatPrint("[VORTEX] LEVEL UP! You are now level ".. ply.SkillData.level .." and earned 1 point!")
         else
@@ -154,39 +154,6 @@ hook.Add("PlayerSpawn", "Vortex_Skills_JobOverride", function(ply)
     end)
 end)
 
-concommand.Add("vtx_skills_wipe_all", function(ply, cmd, args)
-    -- 1. Permission Check
-    -- Allow execution from Server Console (ply is NULL) or SuperAdmin
-    if IsValid(ply) and not ply:IsSuperAdmin() then 
-        ply:ChatPrint("Access Denied: You must be a SuperAdmin to wipe all skill data.")
-        return 
-    end
-
-    -- 2. Confirmation Check
-    -- Prevents accidental wipes. Must type: vtx_skills_wipe_all confirm
-    if args[1] ~= "confirm" then
-        local msg = "WARNING: This will delete ALL skill levels and points for EVERY player. Type 'vtx_skills_wipe_all confirm' to proceed."
-        if IsValid(ply) then ply:ChatPrint(msg) else print(msg) end
-        return
-    end
-
-    -- 3. The Database Wipe
-    -- This removes the entry from the global PData table in sv.db
-    sql.Query("DELETE FROM playerpdata WHERE infoid = 'vtx_skilldata'")
-
-    -- 4. Immediate Live Reset
-    -- We must reset players currently on the server so they don't overwrite the wipe when they leave
-    for _, target in ipairs(player.GetAll()) do
-        target.SkillData = {
-            points = 0, -- Or whatever your starting points are
-            skills = {}
-        }
-        target:ChatPrint("[SkillTrees] An administrator has wiped all global skill data.")
-    end
-
-    print("[SkillTrees] SUCCESS: All player skill data has been deleted from the database.")
-    SkillTrees:SaveAndSync(ply)
-end)
 
 concommand.Add("vtx_skills_give_points", function(ply, cmd, args)
     local amount = tonumber(args[1] or 10)

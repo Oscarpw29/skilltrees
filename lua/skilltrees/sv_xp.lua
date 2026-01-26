@@ -1,5 +1,6 @@
 hook.Add("OnNPCKilled", "Vortex_SimpleNPCXP", function(npc, attacker, inflictor)
-    if IsValid(attacker) and attacker:IsPlayer() then
+    local ply = (attacker:IsPlayer() and attacker) or (attacker.GetPlayerColor and attacker:GetOwner())
+    if IsValid(ply) and ply:IsPlayer() then
         local baseXP = SkillTrees.NPC_XP_REWARD
         SkillTrees:AddXP(attacker, baseXP)
     end
@@ -11,7 +12,7 @@ local PASSIVE_TIME = 300
 timer.Create("Vortex_PassiveXP_Timer", PASSIVE_TIME, 0, function ()
     for _, ply in ipairs(player.GetAll()) do
         if IsValid(ply) and ply:Team() ~= TEAM_SPECTATOR then
-            local multi = self:SkillTrees:GetPlayerMultiplier(ply)
+            local multi = SkillTrees:GetPlayerMultiplier(ply)
             SkillTrees:AddXP(ply, PASSIVE_XP)
             local finalxp = PASSIVE_XP * multi
             ply:ChatPrint("Passive XP Recieved: " .. finalxp)
@@ -19,8 +20,8 @@ timer.Create("Vortex_PassiveXP_Timer", PASSIVE_TIME, 0, function ()
     end
 end)
 
-function SkillTrees:GetPlayerMultiplier(ply)
+function SkillTrees:GetPlayerMultipliers(ply)
     local rank = ply:GetUserGroup()
     local multiplier = self.RankMultipliers[rank] or 1.0
-    return multipler
+    return multiplier
 end

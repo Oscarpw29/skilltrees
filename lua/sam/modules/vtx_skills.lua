@@ -59,10 +59,10 @@ command.new("resetskills")
 :End()
 
 command.new("vortex_savestations")
-    :SetPermission("vortex_savestations", superadmin)
+    :SetPermission("vortex_savestations", "superadmin")
     :Help("Save all stations on the map")
     :OnExecute(function(ply)
-        hook.Run("vortex_savestations")
+        hook.Run("Vortex_SaveStations")
         sam.player.send_message(nil, "{A} saved all skill stations",{
             A = ply
         })
@@ -70,10 +70,10 @@ command.new("vortex_savestations")
 :End()
 
 command.new("vortex_clearstations")
-    :SetPermission("vortex_clearstations", superadmin)
+    :SetPermission("vortex_clearstations", "superadmin")
     :Help("Clears all stations on the current map.")
     :OnExecute(function(ply)
-        hook.Run("Vortex_ClearStations")
+        hook.Run("Vortex_SaveStations")
         
         sam.player.send_message(nil, "{A} cleared all skill stations",{
             A = ply

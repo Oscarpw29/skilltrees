@@ -5,28 +5,38 @@ if not file.Exists(folder, "DATA") then
 end
 
 function SkillTrees:SaveStations()
+    print("[Vortex Debug] SaveStations called.")
+    
     if not file.Exists(folder, "DATA") then
+        print("[Vortex Debug] Creating folder: " .. folder)
         file.CreateDir(folder)
     end
 
-    local stations = {}
     local foundEnts = ents.FindByClass("vtx_skill_station")
-    
-    for _, ent in pairs(ents.FindByClass("vtx_skill_station")) do
+    print("[Vortex Debug] Found " .. #foundEnts .. " entities with class vtx_skill_station")
+
+    local stations = {}
+    for _, ent in ipairs(foundEnts) do
         table.insert(stations, {
             pos = ent:GetPos(),
             ang = ent:GetAngles()
         })
     end
 
-    if #stations == 0 then return end
+    if #stations == 0 then 
+        print("[Vortex Debug] No stations found to save. Stopping.")
+        return 
+    end
 
-    local fileName = folder .. "/" ..game.GetMap() .. ".txt"
+    local fileName = folder .. "/" .. game.GetMap() .. ".txt"
+    local json = util.TableToJSON(stations, true)
+    
     file.Write(fileName, json)
+    print("[Vortex Debug] SUCCESSFULLY wrote file to: " .. fileName)
 end
 
 function SkillTrees:LoadStations()
-    for _, in ipairs(ents.FindByClass("vtx_skill_station")) do
+    for _, ent in ipairs(ents.FindByClass("vtx_skill_station")) do
         ent:Remove()
     end
     local path = folder .. "/" .. game.GetMap() .. ".txt"
@@ -62,10 +72,6 @@ hook.Add("InitPostEntity", "Vortex_loadStations", function ()
     SkillTrees:LoadStations()
 end)
 
-hook.Add("Vortex_Skills_SaveStations", "ExecuteSave", function()
-    SkillTrees:SaveStations()
-end)
-
 hook.Add("Vortex_ClearStations", "ExecuteClear", function()
     local path = folder .. "/" .. game.GetMap() .. ".txt"
     if file.Exists(path, "DATA") then file.Delete(path) end
@@ -74,4 +80,16 @@ hook.Add("Vortex_ClearStations", "ExecuteClear", function()
         ent:Remove()
     end
     print("[Vorted] Stations cleared via hook.")
+end)
+
+hook.Add("Vortex_SaveStations", "ExecuteSave", function()
+    print("[Vortex] Hook received! Attempting to save...")
+    
+    -- Safety: If the table doesn't exist yet, wait 1 frame
+    if not SkillTrees or not SkillTrees.SaveStations then
+        print("[Vortex] Error: SkillTrees table or SaveStations function is missing!")
+        return
+    end
+
+    SkillTrees:SaveStations()
 end)
