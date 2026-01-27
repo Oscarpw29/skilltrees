@@ -30,8 +30,9 @@ SkillTrees.Config = {}
 
 SkillTrees.Tree = {
     ["3rd Systems Army"] = {
-        Teams = {TEAM_3RDCO, TEAM_3RDXO, TEAM_3RDOFF, TEAM_3RDNCO, TEAM_3RDTRP, TEAM_3RD104, TEAM_3RD501, TEAM_3RD327, TEAM_3RD41, "Marshal Commander"},
+        Teams = {"Marshal Commander"},
         Ranks = {"superadmin"},
+        MRSGroup = "3rd Systems Army",
         Color = Color(138,198,209),
         Skills = {
             ["tank"] = {
@@ -72,9 +73,10 @@ SkillTrees.Tree = {
         }
     },
     ["Republic Security Forces"] = {
-        Teams = {TEAM_CGFOX, TEAM_CGXO, TEAM_CGOFF, TEAM_CGHG, TEAM_CGHVY, TEAM_CGMED, TEAM_CGSNP, TEAM_CGTRP},
+        Teams = {"Marshal Commander"},
         Color = Color(255,0,0),
         Ranks = {"superadmin"},
+        MRSGroup = "Republic Security Force",
         Skills = {
             ["salary_1"] = {
                 name = "Gold Bags",
@@ -114,9 +116,10 @@ SkillTrees.Tree = {
         }
     },
     ["Alpha Arc"] = {
-        Teams = {TEAM_ARCCO, TEAM_ARCCPT, TEAM_ARCHY, TEAM_ARCPLT, TEAM_ARCTRP},
+        Teams = {"Head Staff On Duty"},
         Color = Color(255,100,100),
         Ranks = {"superadmin"},
+        MRSGroup = "Alpha ARC",
         Skills = {
             ["tank_arc"] = {
                 name = "Enhanced Survivability",

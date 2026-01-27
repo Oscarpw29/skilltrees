@@ -8,9 +8,8 @@ local function ShowCategories()
     if not IsValid(MainMenu) or not IsValid(layout) then return end
     layout:Clear()
     if IsValid(MainMenu.backBtn) then MainMenu.backBtn:SetVisible(false) end
-
-    layout:GetParent():InvalidateLayout(true)
     
+    layout:GetParent():InvalidateLayout(true)
     local wide = layout:GetWide()
     if wide <= 100 then wide = MainMenu:GetWide() - 40 else wide = wide - 20 end
 
@@ -21,6 +20,7 @@ local function ShowCategories()
     local myCategory = myJobTable and myJobTable.category or "Unknown"
     local myRank = LocalPlayer():GetUserGroup()
     local myID = LocalPlayer():SteamID()
+    
 
     -- Ensure the base table exists before looping
     if not SkillTrees or not SkillTrees.Tree then return end
@@ -28,16 +28,22 @@ local function ShowCategories()
     for catName, catData in pairs(SkillTrees.Tree) do
         -- 1. Default Access (If no Teams table is defined, everyone sees it)
         local isDefaultTree = (catData.Teams == nil)
-        
+        local hasAccess = false
+
         -- 2. Team Access (Manual Loop to avoid table.HasValue crash)
-        local hasTeamAccess = false
         if catData.Teams and istable(catData.Teams) then
             for _, val in pairs(catData.Teams) do
                 -- Checks for BOTH the Team ID number and the Job Name string
                 if val == myTeam or val == myJobName then
-                    hasTeamAccess = true
+                    hasAccess = true
                     break
                 end
+            end
+        end
+        if catData.MRSGroup and MRS then 
+            local myMRSGroup = MRS.GetNWdata(LocalPlayer(), "Group")
+            if myMRSGroup == catData.MRSGroup then
+                hasAccess = true
             end
         end
 
@@ -45,23 +51,21 @@ local function ShowCategories()
         local hasCategoryAccess = (catName == myCategory)
         
         -- 4. Rank Access (Safe Manual Loop)
-        local hasRankAccess = false
         if catData.Ranks and istable(catData.Ranks) then
             for _, r in pairs(catData.Ranks) do
-                if r == myRank then hasRankAccess = true break end
+                if r == myRank then hasAccess = true break end
             end
         end
 
         -- 5. Direct SteamID Access (Safe Manual Loop)
-        local hasDirectAccess = false
         if catData.SteamIDs and istable(catData.SteamIDs) then
             for _, id in pairs(catData.SteamIDs) do
-                if id == myID then hasDirectAccess = true break end
+                if id == myID then hasAccess = true break end
             end
         end
 
         -- Final Logic Gate: If user fails ALL checks, skip this category
-        if not (isDefaultTree or hasTeamAccess or hasRankAccess or hasDirectAccess or hasCategoryAccess) then 
+        if not (isDefaultTree or hasAccess) then 
             continue 
         end
 
