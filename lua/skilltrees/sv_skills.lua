@@ -48,11 +48,13 @@ net.Receive("vtx_skills_purchase", function(len, ply)
     ply.SkillData.points = ply.SkillData.points - cost
     ply.SkillData.skills[skillID] = (ply.SkillData.skills[skillID] or 0) +1
 
-    ply:ChatPrint(skillInfo.name .. " Upgraded to level".. (currentLevel + 1))
+    ply:ChatPrint(skillInfo.name .. " Upgraded to level ".. (currentLevel + 1))
     SkillTrees:SaveAndSync(ply)
     SkillTrees:ApplyBuffs(ply)
 
     ply:SetPData("vtx_skilldata", util.TableToJSON(ply.SkillData))
+    net.Start("Vortex_RefreshWeapon")
+    net.Send(ply)
 end)
 
 net.Receive("vtx_skills_reset", function(len, ply)
@@ -72,6 +74,7 @@ net.Receive("vtx_skills_reset", function(len, ply)
     hook.Run("SkillTree_UpdateStats", ply)
     ply:ChatPrint("[VORTEX] SKills Reset! Refunded ".. totalRefund .."points.")
 end)
+
 
 function SkillTrees:SaveAndSync(ply)
     if not IsValid(ply) or not ply.SkillData then return end
@@ -155,24 +158,6 @@ hook.Add("PlayerSpawn", "Vortex_Skills_JobOverride", function(ply)
 end)
 
 
-concommand.Add("vtx_skills_give_points", function(ply, cmd, args)
-    local amount = tonumber(args[1] or 10)
-    local target = ply
-    if not IsValid(target) then return end 
-    target.SkillData = target.SkillData or { points = 0, skills = {} }
-    target.SkillData.points = target.SkillData.points + amount
-       
-    target:ChatPrint("Debug Added " .. amount .. " points, new total" .. target.SkillData.points)
-        
-
-    if SkillTrees and SkillTrees.SaveAndSync then
-        SkillTrees:SaveAndSync(target)
-    else
-        net.Start("vtx_update_skills")
-            net.WriteTable(target.SkillData)
-        net.Send(target)
-    end
-end)
 
 concommand.Add("vtx_skills_wipe_all", function(ply, cmd, args)
     -- 1. Permission Check
@@ -192,7 +177,7 @@ concommand.Add("vtx_skills_wipe_all", function(ply, cmd, args)
 
     -- 3. The Database Wipe
     -- This removes the entry from the global PData table in sv.db
-    sql.Query("DELETE FROM playerpdata WHERE infoid = 'vtx_skilldata'")
+    sql.Query("DELETE FROM playerpdata WHERE infoid.find('vtx_skilldata')")
 
     -- 4. Immediate Live Reset
     -- We must reset players currently on the server so they don't overwrite the wipe when they leave
@@ -208,18 +193,29 @@ concommand.Add("vtx_skills_wipe_all", function(ply, cmd, args)
     SkillTrees:SaveAndSync(ply)
 end)
 
-hook.Add("ArcCW_ModifyRPM", "Vortex_Skills_FireRate", function(wep, rpm)
-    local ply = wep:GetOwner()
-    if not IsValid(ply) or not ply:IsPlayer() or not ply.SkillData then return end
+-- hook.Add("ArcCW_ModifyRPM", "Vortex_Skills_FireRate", function(wep, rpm)
+--     local ply = wep:GetOwner()
+--     if not IsValid(ply) or not ply:IsPlayer() or not ply.SkillData then return end
 
-    local buffs = SkillTrees:CalculateBuffs(ply)
+--     local buffs = SkillTrees:CalculateBuffs(ply)
 
-    if buffs.firerate and buffs.firerate > 0 then
-        return rpm * (1 + buffs.firerate)
-    end
-end)
+--     if buffs.firerate and buffs.firerate > 0 then
+--         return rpm * (1 + buffs.firerate)
+--     end
+-- end)
 
 local COMBAT_COOLDOWN = 15
+
+hook.Add("SetupMove", "Vortex_Skills_Speed", function(ply, mv, cmd)
+    local buffs = SkillTrees:CalculateBuffs(ply)
+
+    if buffs and buffs.movespeed and buffs.movespeed > 0 then
+        local multiplier = 1 + buffs.movespeed
+
+        mv:SetMaxClientSpeed(mv:GetMaxClientSpeed() * multiplier)
+        mv:SetMaxSpeed(mv:GetMaxSpeed() * multiplier)
+    end
+end)
 
 timer.Create("Vortex_Skill_RegenTimer", 2, 0, function()
     for _, ply in ipairs(player.GetAll()) do

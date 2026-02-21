@@ -65,7 +65,7 @@ SkillTrees.Tree = {
             },
             ["reloadspeed_01"] = {
                 name = "Fast Fingers",
-                description = "Increase reload peed by 1.0% per level.",
+                description = "Increase reload speed by 1.0% per level.",
                 price = 1,
                 maxLevel = 5,
                 requirement = nil,
@@ -94,7 +94,7 @@ SkillTrees.Tree = {
             },
             ["reloadspeed_25"] = {
                 name = "Quick Fingers",
-                description = "Increase reload peed by 2.5% per level.",
+                description = "Increase reload speed by 2.5% per level.",
                 price = 1,
                 maxLevel = 5,
                 requirement = nil,
@@ -115,11 +115,24 @@ SkillTrees.Tree = {
             }
         }
     },
+    ["Commando"] = {
+        Color = Color(10,100,100),
+        Ranks = {"supderadmin"},
+        Teams = {"501ST TC ARC TROOPER","327TH KC ARC TROOPER", "CG DES ARC TROOPER", "DU CC ARC TROOPER"},
+        Skills = {
+            ["commando_training"] = {
+                name = "ARC Training",
+                description = "Increase health by 25, armor by 15",
+                price = 2, 
+                maxLevel = 10,
+                requirement = nil,
+            }
+        }
+    },
     ["Alpha Arc"] = {
         Teams = {"Head Staff On Duty"},
         Color = Color(255,100,100),
         Ranks = {"superadmin"},
-        MRSGroup = "Alpha ARC",
         Skills = {
             ["tank_arc"] = {
                 name = "Enhanced Survivability",
@@ -144,14 +157,14 @@ SkillTrees.Tree = {
             },
             ["armor_regen_1"] = {
                 name = "Nano Robotic Armor Coating",
-                description = "Regen 1 health every 5 seconds when out of combat",
+                description = "Regen 1 armor every 5 seconds when out of combat",
                 price = 1,
                 maxLevel = 10,
                 requirement = nil,
             },
             ["reloadspeed_25"] = {
                 name = "Quick Fingers",
-                description = "Increase reload peed by 2.5% per level.",
+                description = "Increase reload speed by 2.5% per level.",
                 price = 1,
                 maxLevel = 5,
                 requirement = nil,
@@ -221,6 +234,8 @@ SkillTrees.Buffs = {
     ["salary_1"] = { salary_bonus = 0.01 },
     ["reloadspeed_25"] = { reloadspeed = 0.025},
     ["reloadspeed_01"] = { reloadspeed = 0.01},
+    ["commando_training"] = { hp = 25, armor = 15, resistance = 0.01},
+    ["speed"] = { movespeed = 0.02}
 }
 
 SkillTrees.RankMultipliers = {
@@ -249,7 +264,7 @@ end
 SkillTrees.NPC_XP_REWARD = 5
 
 function SkillTrees:CalculateBuffs(ply)
-    local stats = { hp = 0, speed = 0, armor = 0, hpregen = 0, armorregen = 0, firerate = 0, reloadspeed = 0}
+    local stats = { hp = 0, speed = 0, armor = 0, hpregen = 0, armorregen = 0, firerate = 0, reloadspeed = 0, movespeed = 0}
     if not IsValid(ply) then return stats end
     ply.SkillData = ply.SkillData or {}
 
@@ -267,6 +282,7 @@ function SkillTrees:CalculateBuffs(ply)
             if buff.armorregen then stats.armorregen = stats.armorregen + (buff.armorregen * lvl) end
             if buff.firerate then stats.firerate = stats.firerate + (buff.firerate * lvl) end
             if buff.reloadspeed then stats.reloadspeed = stats.reloadspeed + (buff.reloadspeed * level) end
+            if buff.movespeed then stats.movespeed = stats.movespeed + (config.movespeed * lvl) end
         end
     end
     return stats
