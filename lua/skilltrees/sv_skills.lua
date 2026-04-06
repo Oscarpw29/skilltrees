@@ -1,6 +1,8 @@
 util.AddNetworkString("vtx_skills_purchase")
 util.AddNetworkString("vtx_skills_reset")
 util.AddNetworkString("vtx_skills_menu")
+util.AddNetworkString("Vortex_RefreshWeapon") 
+util.AddNetworkString("vtx_skills_sync")
 
 net.Receive("vtx_skills_purchase", function(len, ply)
     local skillID = net.ReadString()
@@ -109,11 +111,22 @@ function SkillTrees:ApplyBuffs(ply)
 
     -- 5. Sync the MaxHP to the client HUD
     ply:SetNWInt("MaxHP", finalMax)
+    ply:SetNWInt("MaxArmor", finalArmor)
+
+    if buffs.salary_bonus and buffs.salary_bonus > 0 then
+        local baseSalary = job.salary or 0
+        local bonus = baseSalary * buffs.salary_bonus
+        local finalSalary = math.Round(baseSalary + bonus)
+        if ply.setDarkRPVar then
+            ply:setDarkRPVar("salary", finalSalary)    
+        end
+        ply:SetNWInt("salary", finalSalary)
+    end
     
 end
 
 local base_xp = 100
-local xp_exponent = 1.5
+local xp_exponent = 1.3
 
 function SkillTrees:GetRequiredXP(level)
     if level <= 0 then return BASE_XP end
@@ -158,39 +171,22 @@ hook.Add("PlayerSpawn", "Vortex_Skills_JobOverride", function(ply)
 end)
 
 
-
 concommand.Add("vtx_skills_wipe_all", function(ply, cmd, args)
-    -- 1. Permission Check
-    -- Allow execution from Server Console (ply is NULL) or SuperAdmin
-    if IsValid(ply) then 
-        ply:PrintMessage(HUD_PRINTCONSOLE, "[Vortex] This command can only be run from the SERVER console for security.")
-        return 
-    end
+    if IsValid(ply) then return end -- Console only
 
-    -- 2. Confirmation Check
-    -- Prevents accidental wipes. Must type: vtx_skills_wipe_all confirm
     if args[1] ~= "confirm" then
-        local msg = "WARNING: This will delete ALL skill levels and points for EVERY player. Type 'vtx_skills_wipe_all confirm' to proceed."
-        if IsValid(ply) then ply:ChatPrint(msg) else print(msg) end
+        print("Type 'vtx_skills_wipe_all confirm' to delete all player data.")
         return
     end
 
-    -- 3. The Database Wipe
-    -- This removes the entry from the global PData table in sv.db
-    sql.Query("DELETE FROM playerpdata WHERE infoid.find('vtx_skilldata')")
-
-    -- 4. Immediate Live Reset
-    -- We must reset players currently on the server so they don't overwrite the wipe when they leave
+    -- The correct GMod SQL syntax:
+    sql.Query("DELETE FROM playerpdata WHERE infoid = 'vtx_skilldata'")
     for _, target in ipairs(player.GetAll()) do
-        target.SkillData = {
-            points = 0, -- Or whatever your starting points are
-            skills = {}
-        }
-        target:ChatPrint("[SkillTrees] An administrator has wiped all global skill data.")
+        target.SkillData = { points = 0, skills = {} }
+        SkillTrees:SaveAndSync(target)
     end
 
-    print("[SkillTrees] SUCCESS: All player skill data has been deleted from the database.")
-    SkillTrees:SaveAndSync(ply)
+    print("[Vortex] Database Wiped Successfully.")
 end)
 
 -- hook.Add("ArcCW_ModifyRPM", "Vortex_Skills_FireRate", function(wep, rpm)
@@ -245,28 +241,20 @@ timer.Create("Vortex_Skill_RegenTimer", 2, 0, function()
     end
 end)
 
-hook.Add("EntityTakeDamage", "Vortex_Skills_CombatTracker", function(target, dmginfo)
-    if IsValid(target) and target:IsPlayer() then
-        target.Vortex_LastDamageTime = CurTime()
-    end    
-end)
+hook.Add("ScalePlayerDamage", "Vortex_Skills_CombatAndResistance", function(ply, hitgroup, dmginfo)
+    -- 1. Track Combat for Regen
+    ply.Vortex_LastDamageTime = CurTime()
 
-hook.Add("EntityTakeDamage", "Vortex_Skills_Resistance", function(target, dmginfo)
-    if IsValid(target) and target:IsPlayer() then
-        local buffs = SkillTrees:CalculateBuffs(target)
-        if buffs.resistance and buffs.resistance > 0 then
-            local scale = math.max(0, 1 - buffs.resistance)
-            dmginfo:ScaleDamage(scale)
-        end    
+    -- 2. Handle Resistance
+    local buffs = SkillTrees:CalculateBuffs(ply)
+    if buffs and buffs.resistance and buffs.resistance > 0 then
+        -- math.max(0.1) prevents players from being 100% immune (god mode)
+        local scale = math.max(0.1, 1 - buffs.resistance)
+        dmginfo:ScaleDamage(scale)
     end
 end)
 
-hook.Add("DarkRP_SalaryPayload", "Vortex_Skills_Salary", function(ply, amount)
-    local buffs = SkillTrees:CalculateBuffs(ply)
-    if buffs.salary_bonus and buffs.salary_bonus > 0 then
-        return amount + (amount * buffs.salary_bonus)
-    end    
-end)
+-- Ensure this starts on or around line 281
 
 hook.Add("ArcCW_ModifyReloadTime", "Vortex_Skills_ReloadSpeed", function(wep, duration)
     local ply = wep:GetOwner()

@@ -29,95 +29,56 @@ SkillTrees = SkillTrees or {}
 SkillTrees.Config = {}
 
 SkillTrees.Tree = {
-    ["3rd Systems Army"] = {
-        Teams = {"Marshal Commander"},
-        Ranks = {"superadmin"},
-        MRSGroup = "3rd Systems Army",
-        Color = Color(138,198,209),
+    ["Clone Troopers"] = {
+        Color = Color(255,255,255),
         Skills = {
-            ["tank"] = {
-                name = "Durability",
-                description = "Increase health by 25 and armor and 10.",
-                price = 1,
-                maxLevel = 10,
-                requirement = nil,
-            },
-            ["firerate_25"] = {
-                name = "Quick Fingers",
-                description = "Increase firerate by 2.5% per level.",
-                price = 1,
-                maxLevel = 5,
-                requirement = nil,
-            },
-            ["salary_1"] = {
-                name = "Gold Bags",
-                description = "Increase salary by 1% per level",
-                price = 1,
-                maxLevel = 10,
-                requirement = nil,
-            },
-            ["damageres_1"] = {
-                name = "Hardened Skin",
-                description = "1% Damage reduction per level",
-                price = 1,
-                maxLevel = 10,
-                requirement = nil,
-            },
-            ["reloadspeed_01"] = {
-                name = "Fast Fingers",
-                description = "Increase reload speed by 1.0% per level.",
-                price = 1,
-                maxLevel = 5,
-                requirement = nil,
-            },
-        }
-    },
-    ["Republic Security Forces"] = {
-        Teams = {"Marshal Commander"},
-        Color = Color(255,0,0),
-        Ranks = {"superadmin"},
-        MRSGroup = "Republic Security Force",
-        Skills = {
-            ["salary_1"] = {
-                name = "Gold Bags",
-                description = "Increase salary by 1% per level",
-                price = 1,
-                maxLevel = 10,
-                requirement = nil,
-            },
-            ["damageres_1"] = {
-                name = "Hardened Skin",
-                description = "1% Damage reduction per level",
-                price = 1,
-                maxLevel = 10,
-                requirement = nil,
-            },
-            ["reloadspeed_25"] = {
-                name = "Quick Fingers",
-                description = "Increase reload speed by 2.5% per level.",
-                price = 1,
-                maxLevel = 5,
-                requirement = nil,
-            },
-            ["tank"] = {
-                name = "Durability",
-                description = "Increase health by 25 and armor and 10.",
+            ["health_10"] = {
+                name = "Endurance",
+                description = "Increases health by 10",
                 price = 1,
                 maxLevel = 10,
                 requirement = nil,
             },
             ["hp_regen_2"] = {
-                name = "Nano Robotic Armor",
-                description = "Regen 2 health every 5 seconds when out of combat",
+                name = "Nano Robotic Flesh",
+                description = "Regenerate health out of combat",
+                price = 3,
+                maxLevel = 5,
+                requirement = "health_10",
+            },
+            ["armor_5"] = {
+                name = "Armor Boost",
+                description = "Increase your armor by 5",
                 price = 1,
                 maxLevel = 10,
                 requirement = nil,
+            },
+            ["armor_regen_1"] = {
+                name = "Nanite Armor",
+                description = "Regenerate armor out of combat",
+                price = 3,
+                maxLevel = 3,
+                requirement = "armor_5",
+            },
+            ["tank"] = {
+                name = "Battle Hardened",
+                description = "Increase your health by 25, and armor by 10",
+                price = 3,
+                maxLevel = 5,
+                requirement = "armor_regen_1", "hp_regen_2",
+            },
+            ["damageres_1"] = {
+                name = "Brick Wall",
+                description = "Reduce damage you take from NPCs by 1% per level",
+                price = 5,
+                maxLevel = 5,
+                requirement = "tank",
             }
         }
     },
     ["Commando"] = {
         Color = Color(10,100,100),
-        Ranks = {"supderadmin"},
+        Ranks = {"superadmin"},
         Teams = {"501ST TC ARC TROOPER","327TH KC ARC TROOPER", "CG DES ARC TROOPER", "DU CC ARC TROOPER"},
         Skills = {
             ["commando_training"] = {
@@ -136,14 +97,7 @@ SkillTrees.Tree = {
         Skills = {
             ["tank_arc"] = {
                 name = "Enhanced Survivability",
-                description = "25 health, 10 armor, and 1% damage reduction per level",
-                price = 1,
-                maxLevel = 10,
-                requirement = nil,
-            },
-            ["salary_1"] = {
-                name = "Gold Bags",
-                description = "Increase salary by 1% per level",
+                description = "25 health, 10 armor, and 1% damage reduction from NPCs per level",
                 price = 1,
                 maxLevel = 10,
                 requirement = nil,
@@ -178,32 +132,6 @@ SkillTrees.Tree = {
             },
         }
     },
-    ["Default"] = {
-        Color = Color(255,255,255),
-        Skills = {
-            ["health_10"] = {
-                name = "Health Boost I",
-                description = "Increases health by 10 per level",
-                price = 1,
-                maxLevel = 10,
-                requirement = nil,
-            },
-            ["armor_5"] = {
-                name = "Armor Boost I",
-                description = "Increases armor by 5 per level",
-                price = 1,
-                maxLevel = 10,
-                requirement = nil,
-            },
-            ["salary_1"] = {
-                name = "Money Bags",
-                description = "Increases salary by 1% per level",
-                price = 1,
-                maxLevel = 5,
-                requirement = nil,
-            },
-        }
-    },
     ["Jedi"] = {
         Teams = {TEAM_JEDI},
         SteamIDs = {"STEAM_0:1:12345"},
@@ -231,7 +159,6 @@ SkillTrees.Buffs = {
     ["firerate_5"] = { firerate = 0.05 },
     ["firerate_25"] = { firerate = 0.025},
     ["damageres_1"] = { resistance = 0.01 },
-    ["salary_1"] = { salary_bonus = 0.01 },
     ["reloadspeed_25"] = { reloadspeed = 0.025},
     ["reloadspeed_01"] = { reloadspeed = 0.01},
     ["commando_training"] = { hp = 25, armor = 15, resistance = 0.01},
@@ -264,7 +191,7 @@ end
 SkillTrees.NPC_XP_REWARD = 5
 
 function SkillTrees:CalculateBuffs(ply)
-    local stats = { hp = 0, speed = 0, armor = 0, hpregen = 0, armorregen = 0, firerate = 0, reloadspeed = 0, movespeed = 0}
+    local stats = { hp = 0, speed = 0, armor = 0, hpregen = 0, armorregen = 0, firerate = 0, reloadspeed = 0, movespeed = 0, resistance = 0}
     if not IsValid(ply) then return stats end
     ply.SkillData = ply.SkillData or {}
 
@@ -282,7 +209,8 @@ function SkillTrees:CalculateBuffs(ply)
             if buff.armorregen then stats.armorregen = stats.armorregen + (buff.armorregen * lvl) end
             if buff.firerate then stats.firerate = stats.firerate + (buff.firerate * lvl) end
             if buff.reloadspeed then stats.reloadspeed = stats.reloadspeed + (buff.reloadspeed * level) end
-            if buff.movespeed then stats.movespeed = stats.movespeed + (config.movespeed * lvl) end
+            if buff.movespeed then stats.movespeed = stats.movespeed + (buff.movespeed * lvl) end
+            if buff.resistance then stats.resistance = (stats.resistance) + (buff.resistance * lvl) end
         end
     end
     return stats

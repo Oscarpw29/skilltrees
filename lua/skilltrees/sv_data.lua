@@ -6,7 +6,8 @@ end
 local PDATA_KEY = "vtx_skilldata"
 
 hook.Add("PlayerInitialSpawn", "SkillTrees_Load", function(ply)
-    local steamid = ply:SteamID64()
+    -- If data is already loaded (e.g. SAM re-fires this hook on rank change), don't wipe it
+    if ply.SkillData and ply.SkillData.skills then return end
 
     ply.SkillData = {
         xp = 0,
@@ -19,7 +20,7 @@ hook.Add("PlayerInitialSpawn", "SkillTrees_Load", function(ply)
         if not IsValid(ply) then return end
 
         local data = ply:GetPData(PDATA_KEY, nil)
-        
+
         if data and data ~= "" then
             local decoded = util.JSONToTable(data)
             if decoded then
@@ -29,11 +30,11 @@ hook.Add("PlayerInitialSpawn", "SkillTrees_Load", function(ply)
             end
         end
 
-        if not ply.SkillData then 
+        if not ply.SkillData then
             ply.SkillData = { points = 10, skills = {} }
             print("[Skills] New player detected: " .. ply:Nick())
         end
-        
+
         -- Final Sync
         if SkillTrees.SaveAndSync then
             SkillTrees:SaveAndSync(ply)
@@ -42,7 +43,20 @@ hook.Add("PlayerInitialSpawn", "SkillTrees_Load", function(ply)
                 net.WriteTable(ply.SkillData)
             net.Send(ply)
         end
-    SkillTrees:ApplyBuffs(ply)
+        SkillTrees:ApplyBuffs(ply)
+    end)
+end)
+
+-- When SAM (or anything else) changes a player's rank, save their data and re-apply buffs
+-- This prevents any rank-change hooks from wiping skill data
+hook.Add("UserGroupSet", "SkillTrees_RankChange", function(ply, oldGroup, newGroup)
+    if not IsValid(ply) or not ply.SkillData then return end
+    -- Save first to protect against anything downstream wiping data
+    SkillTrees:SaveAndSync(ply)
+    timer.Simple(1, function()
+        if IsValid(ply) then
+            SkillTrees:ApplyBuffs(ply)
+        end
     end)
 end)
 
