@@ -125,8 +125,8 @@ function SkillTrees:ApplyBuffs(ply)
     
 end
 
-local base_xp = 100
-local xp_exponent = 1.3
+local base_xp = 75
+local xp_exponent = 1.2
 
 function SkillTrees:GetRequiredXP(level)
     if level <= 0 then return BASE_XP end
