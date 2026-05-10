@@ -95,6 +95,13 @@ SkillTrees.Tree = {
                 maxLevel = 5,
                 requirement = "firerate_5",
             },
+            ["salary_5"] = {
+                name = "Combat Pay",
+                description = "Increase your salary by 5% per level",
+                price = 2,
+                maxLevel = 10,
+                requirement = nil,
+            },
         }
     },
     ["Commando"] = {
@@ -184,6 +191,7 @@ SkillTrees.Buffs = {
     ["reloadspeed_25"] = { reloadspeed = 0.025},
     ["reloadspeed_01"] = { reloadspeed = 0.01},
     ["bullet_damage_5"] = { damage = 0.05 },
+    ["salary_5"] = { salary_bonus = 0.05 },
     ["commando_training"] = { hp = 25, armor = 15, resistance = 0.01},
     ["speed"] = { movespeed = 0.02}
 }
@@ -214,7 +222,7 @@ end
 SkillTrees.NPC_XP_REWARD = 5
 
 function SkillTrees:CalculateBuffs(ply)
-    local stats = { hp = 0, speed = 0, armor = 0, hpregen = 0, armorregen = 0, firerate = 0, reloadspeed = 0, movespeed = 0, resistance = 0, damage = 0 }
+    local stats = { hp = 0, speed = 0, armor = 0, hpregen = 0, armorregen = 0, firerate = 0, reloadspeed = 0, movespeed = 0, resistance = 0, damage = 0, salary_bonus = 0 }
     if not IsValid(ply) then return stats end
     ply.SkillData = ply.SkillData or {}
 
@@ -235,6 +243,7 @@ function SkillTrees:CalculateBuffs(ply)
             if buff.movespeed then stats.movespeed = stats.movespeed + (buff.movespeed * lvl) end
             if buff.resistance then stats.resistance = (stats.resistance) + (buff.resistance * lvl) end
             if buff.damage then stats.damage = stats.damage + (buff.damage * lvl) end
+            if buff.salary_bonus then stats.salary_bonus = stats.salary_bonus + (buff.salary_bonus * lvl) end
         end
     end
     return stats
