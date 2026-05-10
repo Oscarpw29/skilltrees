@@ -73,7 +73,28 @@ SkillTrees.Tree = {
                 price = 5,
                 maxLevel = 5,
                 requirement = "tank",
-            }
+            },
+            ["firerate_5"] = {
+                name = "Weapons Training",
+                description = "Increase fire rate by 5% per level",
+                price = 2,
+                maxLevel = 5,
+                requirement = nil,
+            },
+            ["reloadspeed_5"] = {
+                name = "Quick Reload",
+                description = "Increase reload speed by 5% per level (up to 25% faster)",
+                price = 2,
+                maxLevel = 5,
+                requirement = nil,
+            },
+            ["bullet_damage_5"] = {
+                name = "Marksmanship",
+                description = "Increase bullet damage dealt by 5% per level",
+                price = 3,
+                maxLevel = 5,
+                requirement = "firerate_5",
+            },
         }
     },
     ["Commando"] = {
@@ -159,8 +180,10 @@ SkillTrees.Buffs = {
     ["firerate_5"] = { firerate = 0.05 },
     ["firerate_25"] = { firerate = 0.025},
     ["damageres_1"] = { resistance = 0.01 },
+    ["reloadspeed_5"] = { reloadspeed = 0.05 },
     ["reloadspeed_25"] = { reloadspeed = 0.025},
     ["reloadspeed_01"] = { reloadspeed = 0.01},
+    ["bullet_damage_5"] = { damage = 0.05 },
     ["commando_training"] = { hp = 25, armor = 15, resistance = 0.01},
     ["speed"] = { movespeed = 0.02}
 }
@@ -191,7 +214,7 @@ end
 SkillTrees.NPC_XP_REWARD = 5
 
 function SkillTrees:CalculateBuffs(ply)
-    local stats = { hp = 0, speed = 0, armor = 0, hpregen = 0, armorregen = 0, firerate = 0, reloadspeed = 0, movespeed = 0, resistance = 0}
+    local stats = { hp = 0, speed = 0, armor = 0, hpregen = 0, armorregen = 0, firerate = 0, reloadspeed = 0, movespeed = 0, resistance = 0, damage = 0 }
     if not IsValid(ply) then return stats end
     ply.SkillData = ply.SkillData or {}
 
@@ -211,6 +234,7 @@ function SkillTrees:CalculateBuffs(ply)
             if buff.reloadspeed then stats.reloadspeed = stats.reloadspeed + (buff.reloadspeed * level) end
             if buff.movespeed then stats.movespeed = stats.movespeed + (buff.movespeed * lvl) end
             if buff.resistance then stats.resistance = (stats.resistance) + (buff.resistance * lvl) end
+            if buff.damage then stats.damage = stats.damage + (buff.damage * lvl) end
         end
     end
     return stats

@@ -267,3 +267,22 @@ hook.Add("ArcCW_ModifyReloadTime", "Vortex_Skills_ReloadSpeed", function(wep, du
         return duration * mult
     end
 end)
+
+-- Bullet damage for TFA weapons. Server-only; EntityTakeDamage is the reliable way to scale
+-- outgoing damage since TFA fires bullets through standard FireBullets.
+-- IsTFAWeapon is the correct TFA marker field (not wep.TFA).
+-- Fire rate and reload speed are handled in sh_hooks.lua via TFA_GetStat.
+hook.Add("EntityTakeDamage", "Vortex_TFA_BulletDamage", function(target, dmginfo)
+    if not dmginfo:IsBulletDamage() then return end
+
+    local attacker = dmginfo:GetAttacker()
+    if not IsValid(attacker) or not attacker:IsPlayer() then return end
+
+    local wep = attacker:GetActiveWeapon()
+    if not IsValid(wep) or not wep.IsTFAWeapon then return end
+
+    local buffs = SkillTrees:CalculateBuffs(attacker)
+    if buffs.damage and buffs.damage > 0 then
+        dmginfo:ScaleDamage(1 + buffs.damage)
+    end
+end)
