@@ -113,17 +113,23 @@ function SkillTrees:ApplyBuffs(ply)
     ply:SetNWInt("MaxHP", finalMax)
     ply:SetNWInt("MaxArmor", finalArmor)
 
-    if buffs.salary_bonus and buffs.salary_bonus > 0 then
-        local baseSalary = job.salary or 0
-        local bonus = baseSalary * buffs.salary_bonus
-        local finalSalary = math.Round(baseSalary + bonus)
-        if ply.setDarkRPVar then
-            ply:setDarkRPVar("salary", finalSalary)    
-        end
-        ply:SetNWInt("salary", finalSalary)
-    end
-    
 end
+
+-- Give the salary bonus at payday rather than via setDarkRPVar.
+-- setDarkRPVar("salary") gets overwritten by DarkRP on every job change,
+-- so hooking the actual payment event is the only reliable approach.
+hook.Add("DarkRP_PlayerEarned", "Vortex_SalaryBonus", function(ply, amount, reason)
+    if reason ~= "salary" then return end
+    if not IsValid(ply) or not ply.SkillData then return end
+
+    local buffs = SkillTrees:CalculateBuffs(ply)
+    if buffs.salary_bonus and buffs.salary_bonus > 0 then
+        local bonus = math.Round(amount * buffs.salary_bonus)
+        if bonus > 0 then
+            ply:addMoney(bonus)
+        end
+    end
+end)
 
 local base_xp = 75
 local xp_exponent = 1.2

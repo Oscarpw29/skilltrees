@@ -3,7 +3,8 @@
     "allow": [
       "Bash(Get-ChildItem -Path \"F:\\\\gmod addons\\\\skilltrees\" -Recurse -Directory)",
       "Bash(Select-Object -ExpandProperty FullName)",
-      "Bash(Sort-Object)"
+      "Bash(Sort-Object)",
+      "Bash(tar -tzf \"F:/GMOD server/archive-2026-05-11T012420Z.tar.gz\")"
     ]
   }
 }
