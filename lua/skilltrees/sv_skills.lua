@@ -115,20 +115,30 @@ function SkillTrees:ApplyBuffs(ply)
 
 end
 
--- Give the salary bonus at payday rather than via setDarkRPVar.
--- setDarkRPVar("salary") gets overwritten by DarkRP on every job change,
--- so hooking the actual payment event is the only reliable approach.
-hook.Add("DarkRP_PlayerEarned", "Vortex_SalaryBonus", function(ply, amount, reason)
-    if reason ~= "salary" then return end
-    if not IsValid(ply) or not ply.SkillData then return end
+-- Pay salary bonus on the same interval as DarkRP's payday timer.
+-- DarkRP_PlayerEarned passes the team name (not "salary") as the reason,
+-- so a standalone timer reading GAMEMODE.Config.paydelay is simpler and reliable.
+hook.Add("InitPostEntity", "Vortex_SalaryBonus_Setup", function()
+    local delay = (GAMEMODE and GAMEMODE.Config and GAMEMODE.Config.paydelay) or 160
 
-    local buffs = SkillTrees:CalculateBuffs(ply)
-    if buffs.salary_bonus and buffs.salary_bonus > 0 then
-        local bonus = math.Round(amount * buffs.salary_bonus)
-        if bonus > 0 then
-            ply:addMoney(bonus)
+    timer.Create("Vortex_SalaryBonus", delay, 0, function()
+        for _, ply in ipairs(player.GetAll()) do
+            if not IsValid(ply) or not ply.SkillData or not ply:Alive() then continue end
+
+            local buffs = SkillTrees:CalculateBuffs(ply)
+            if not buffs.salary_bonus or buffs.salary_bonus <= 0 then continue end
+
+            local job = ply:getJobTable()
+            local baseSalary = job and job.salary or 0
+            if baseSalary <= 0 then continue end
+
+            local bonus = math.Round(baseSalary * buffs.salary_bonus)
+            if bonus > 0 then
+                ply:addMoney(bonus)
+                ply:ChatPrint("[Skills] Salary bonus: +" .. DarkRP.formatMoney(bonus))
+            end
         end
-    end
+    end)
 end)
 
 local base_xp = 75
