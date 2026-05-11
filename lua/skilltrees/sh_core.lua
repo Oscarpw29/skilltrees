@@ -102,6 +102,13 @@ SkillTrees.Tree = {
                 maxLevel = 10,
                 requirement = nil,
             },
+            ["gold_bullets"] = {
+                name = "Golden Bullets",
+                description = "Earn 1% of your salary per kill",
+                price = 3,
+                maxLevel = 5,
+                requirement = nil,
+            },
         }
     },
     ["Commando"] = {
@@ -192,6 +199,7 @@ SkillTrees.Buffs = {
     ["reloadspeed_01"] = { reloadspeed = 0.01},
     ["bullet_damage_5"] = { damage = 0.05 },
     ["salary_5"] = { salary_bonus = 0.05 },
+    ["gold_bullets"] = { salary_per_kill = 0.01 },
     ["commando_training"] = { hp = 25, armor = 15, resistance = 0.01},
     ["speed"] = { movespeed = 0.02}
 }
@@ -222,7 +230,7 @@ end
 SkillTrees.NPC_XP_REWARD = 5
 
 function SkillTrees:CalculateBuffs(ply)
-    local stats = { hp = 0, speed = 0, armor = 0, hpregen = 0, armorregen = 0, firerate = 0, reloadspeed = 0, movespeed = 0, resistance = 0, damage = 0, salary_bonus = 0 }
+    local stats = { hp = 0, speed = 0, armor = 0, hpregen = 0, armorregen = 0, firerate = 0, reloadspeed = 0, movespeed = 0, resistance = 0, damage = 0, salary_bonus = 0, salary_per_kill = 0 }
     if not IsValid(ply) then return stats end
     ply.SkillData = ply.SkillData or {}
 
@@ -244,6 +252,7 @@ function SkillTrees:CalculateBuffs(ply)
             if buff.resistance then stats.resistance = (stats.resistance) + (buff.resistance * lvl) end
             if buff.damage then stats.damage = stats.damage + (buff.damage * lvl) end
             if buff.salary_bonus then stats.salary_bonus = stats.salary_bonus + (buff.salary_bonus * lvl) end
+            if buff.salary_per_kill then stats.salary_per_kill = stats.salary_per_kill + (buff.salary_per_kill * lvl) end
         end
     end
     return stats

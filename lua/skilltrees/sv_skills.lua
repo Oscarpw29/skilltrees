@@ -135,7 +135,6 @@ hook.Add("InitPostEntity", "Vortex_SalaryBonus_Setup", function()
             local bonus = math.Round(baseSalary * buffs.salary_bonus)
             if bonus > 0 then
                 ply:addMoney(bonus)
-                ply:ChatPrint("[Skills] Salary bonus: +" .. DarkRP.formatMoney(bonus))
             end
         end
     end)
@@ -288,6 +287,26 @@ end)
 -- outgoing damage since TFA fires bullets through standard FireBullets.
 -- IsTFAWeapon is the correct TFA marker field (not wep.TFA).
 -- Fire rate and reload speed are handled in sh_hooks.lua via TFA_GetStat.
+local function GoldenBulletsReward(attacker)
+    if not IsValid(attacker) or not attacker:IsPlayer() or not attacker.SkillData then return end
+    local buffs = SkillTrees:CalculateBuffs(attacker)
+    if not buffs.salary_per_kill or buffs.salary_per_kill <= 0 then return end
+    local job = attacker:getJobTable()
+    local baseSalary = job and job.salary or 0
+    if baseSalary <= 0 then return end
+    local bonus = math.Round(baseSalary * buffs.salary_per_kill)
+    if bonus > 0 then attacker:addMoney(bonus) end
+end
+
+hook.Add("PlayerDeath", "Vortex_GoldenBullets_PlayerKill", function(victim, inflictor, attacker)
+    if not IsValid(attacker) or attacker == victim then return end
+    GoldenBulletsReward(attacker)
+end)
+
+hook.Add("OnNPCKilled", "Vortex_GoldenBullets_NPCKill", function(npc, attacker, inflictor)
+    GoldenBulletsReward(attacker)
+end)
+
 hook.Add("EntityTakeDamage", "Vortex_TFA_BulletDamage", function(target, dmginfo)
     if not dmginfo:IsBulletDamage() then return end
 
