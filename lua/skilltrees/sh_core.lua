@@ -174,18 +174,12 @@ SkillTrees.Tree = {
             },
         }
     },
-    ["Jedi"] = {
+    ["Inquisitors"] = {
         Teams = {TEAM_JEDI},
         SteamIDs = {"STEAM_0:1:12345"},
-        Color = Color(50,255,67),
-
+        Color = Color(255,0,0),
+        MRSGroup = "Inquisitorius",
         Skills = {
-            ["armor_50"] = {
-                name = "Force Push",
-                description = "Knock back enemies infront of you",
-                price = 3,
-                maxLevel = 1,
-            },
             ["lscs_saber_dmg"] = {
                 name = "Saber Mastery",
                 description = "Increase lightsaber damage by 5% per level",
