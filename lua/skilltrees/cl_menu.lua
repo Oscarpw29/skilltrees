@@ -40,9 +40,9 @@ local function ShowCategories()
                 end
             end
         end
-        if catData.MRSGroup and MRS then 
+        if catData.MRSGroup and MRS then
             local myMRSGroup = MRS.GetNWdata(LocalPlayer(), "Group")
-            if myMRSGroup == catData.MRSGroup then
+            if table.HasValue(catData.MRSGroup, myMRSGroup) then
                 hasAccess = true
             end
         end
