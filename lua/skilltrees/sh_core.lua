@@ -109,6 +109,13 @@ SkillTrees.Tree = {
                 maxLevel = 5,
                 requirement = nil,
             },
+            ["xp_boost_10"] = {
+                name = "Veteran",
+                description = "Gain 10% more XP per level",
+                price = 3,
+                maxLevel = 5,
+                requirement = nil,
+            },
         }
     },
     ["Commando"] = {
@@ -179,6 +186,27 @@ SkillTrees.Tree = {
                 price = 3,
                 maxLevel = 1,
             },
+            ["lscs_saber_dmg"] = {
+                name = "Saber Mastery",
+                description = "Increase lightsaber damage by 5% per level",
+                price = 3,
+                maxLevel = 5,
+                requirement = nil,
+            },
+            ["lscs_force_regen_5"] = {
+                name = "Force Renewal",
+                description = "Regenerate 5 force points every 2 seconds",
+                price = 3,
+                maxLevel = 5,
+                requirement = nil,
+            },
+            ["lscs_block_5"] = {
+                name = "Blade Guard",
+                description = "Reduce incoming lightsaber damage by 5% per level",
+                price = 3,
+                maxLevel = 5,
+                requirement = nil,
+            },
         }
     }
 }
@@ -200,6 +228,10 @@ SkillTrees.Buffs = {
     ["bullet_damage_5"] = { damage = 0.05 },
     ["salary_5"] = { salary_bonus = 0.05 },
     ["gold_bullets"] = { salary_per_kill = 0.01 },
+    ["xp_boost_10"] = { xp_boost = 0.1 },
+    ["lscs_saber_dmg"] = { lscs_damage = 0.05 },
+    ["lscs_force_regen_5"] = { lscs_force_regen = 5 },
+    ["lscs_block_5"] = { lscs_block = 0.05 },
     ["commando_training"] = { hp = 25, armor = 15, resistance = 0.01},
     ["speed"] = { movespeed = 0.02}
 }
@@ -220,17 +252,23 @@ SkillTrees.RankMultipliers = {
     ["user"] = 1.0,
 }
 
-function SkillTrees:GetPlayerMultiplier(ply)
+function SkillTrees:GetPlayerMultipliers(ply)
     if not IsValid(ply) then return 1 end
-
     local rank = ply:GetUserGroup()
-    return SkillTrees.RankMultipliers[rank] or 1.0
+    local base = SkillTrees.RankMultipliers[rank] or 1.0
+    if ply.SkillData then
+        local buffs = self:CalculateBuffs(ply)
+        if buffs.xp_boost and buffs.xp_boost > 0 then
+            base = base * (1 + buffs.xp_boost)
+        end
+    end
+    return base
 end
 
 SkillTrees.NPC_XP_REWARD = 5
 
 function SkillTrees:CalculateBuffs(ply)
-    local stats = { hp = 0, speed = 0, armor = 0, hpregen = 0, armorregen = 0, firerate = 0, reloadspeed = 0, movespeed = 0, resistance = 0, damage = 0, salary_bonus = 0, salary_per_kill = 0 }
+    local stats = { hp = 0, speed = 0, armor = 0, hpregen = 0, armorregen = 0, firerate = 0, reloadspeed = 0, movespeed = 0, resistance = 0, damage = 0, salary_bonus = 0, salary_per_kill = 0, lscs_damage = 0, lscs_force_regen = 0, lscs_block = 0, xp_boost = 0 }
     if not IsValid(ply) then return stats end
     ply.SkillData = ply.SkillData or {}
 
@@ -253,6 +291,10 @@ function SkillTrees:CalculateBuffs(ply)
             if buff.damage then stats.damage = stats.damage + (buff.damage * lvl) end
             if buff.salary_bonus then stats.salary_bonus = stats.salary_bonus + (buff.salary_bonus * lvl) end
             if buff.salary_per_kill then stats.salary_per_kill = stats.salary_per_kill + (buff.salary_per_kill * lvl) end
+            if buff.lscs_damage then stats.lscs_damage = stats.lscs_damage + (buff.lscs_damage * lvl) end
+            if buff.lscs_force_regen then stats.lscs_force_regen = stats.lscs_force_regen + (buff.lscs_force_regen * lvl) end
+            if buff.lscs_block then stats.lscs_block = stats.lscs_block + (buff.lscs_block * lvl) end
+            if buff.xp_boost then stats.xp_boost = stats.xp_boost + (buff.xp_boost * lvl) end
         end
     end
     return stats

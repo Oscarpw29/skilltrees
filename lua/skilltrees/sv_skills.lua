@@ -253,6 +253,13 @@ timer.Create("Vortex_Skill_RegenTimer", 2, 0, function()
                 ply:SetArmor(math.min(maxArmor, currentArmor + buffs.armorregen))
             end
         end
+        if buffs.lscs_force_regen and buffs.lscs_force_regen > 0 and ply.lscsGetForce then
+            local curForce = ply:lscsGetForce()
+            local maxForce = ply:lscsGetMaxForce()
+            if curForce < maxForce then
+                ply:lscsSetForce(math.min(maxForce, curForce + buffs.lscs_force_regen))
+            end
+        end
     end
 end)
 
@@ -305,6 +312,28 @@ end)
 
 hook.Add("OnNPCKilled", "Vortex_GoldenBullets_NPCKill", function(npc, attacker, inflictor)
     GoldenBulletsReward(attacker)
+end)
+
+hook.Add("EntityTakeDamage", "Vortex_LSCS_Combat", function(target, dmginfo)
+    if not dmginfo:IsDamageType(DMG_ENERGYBEAM) then return end
+
+    local attacker = dmginfo:GetAttacker()
+    if IsValid(attacker) and attacker:IsPlayer() and attacker.SkillData then
+        local wep = attacker:GetActiveWeapon()
+        if IsValid(wep) and wep.LSCS then
+            local buffs = SkillTrees:CalculateBuffs(attacker)
+            if buffs.lscs_damage and buffs.lscs_damage > 0 then
+                dmginfo:ScaleDamage(1 + buffs.lscs_damage)
+            end
+        end
+    end
+
+    if target:IsPlayer() and target.SkillData then
+        local buffs = SkillTrees:CalculateBuffs(target)
+        if buffs.lscs_block and buffs.lscs_block > 0 then
+            dmginfo:ScaleDamage(math.max(0.1, 1 - buffs.lscs_block))
+        end
+    end
 end)
 
 hook.Add("EntityTakeDamage", "Vortex_TFA_BulletDamage", function(target, dmginfo)
