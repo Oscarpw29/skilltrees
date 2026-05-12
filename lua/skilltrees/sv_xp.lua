@@ -21,7 +21,14 @@ timer.Create("Vortex_PassiveXP_Timer", PASSIVE_TIME, 0, function ()
 end)
 
 function SkillTrees:GetPlayerMultipliers(ply)
+    if not IsValid(ply) then return 1 end
     local rank = ply:GetUserGroup()
-    local multiplier = self.RankMultipliers[rank] or 1.0
-    return multiplier
+    local base = self.RankMultipliers[rank] or 1.0
+    if ply.SkillData then
+        local buffs = self:CalculateBuffs(ply)
+        if buffs.xp_boost and buffs.xp_boost > 0 then
+            base = base * (1 + buffs.xp_boost)
+        end
+    end
+    return base
 end

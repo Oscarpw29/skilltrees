@@ -246,17 +246,10 @@ SkillTrees.RankMultipliers = {
     ["user"] = 1.0,
 }
 
-function SkillTrees:GetPlayerMultipliers(ply)
+function SkillTrees:GetPlayerMultiplier(ply)
     if not IsValid(ply) then return 1 end
     local rank = ply:GetUserGroup()
-    local base = SkillTrees.RankMultipliers[rank] or 1.0
-    if ply.SkillData then
-        local buffs = self:CalculateBuffs(ply)
-        if buffs.xp_boost and buffs.xp_boost > 0 then
-            base = base * (1 + buffs.xp_boost)
-        end
-    end
-    return base
+    return SkillTrees.RankMultipliers[rank] or 1.0
 end
 
 SkillTrees.NPC_XP_REWARD = 5

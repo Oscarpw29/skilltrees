@@ -161,7 +161,7 @@ function SkillTrees:AddXP(ply, amount)
     while ply.SkillData.xp >= required do
         ply.SkillData.xp = ply.SkillData.xp - required
         ply.SkillData.level = ply.SkillData.level + 1
-        if ply.SkillData.level > 0 and (ply.SkillData.level % 3 == 0) then
+        if ply.SkillData.level > 0 and (ply.SkillData.level % 2 == 0) then
             ply.SkillData.points = (ply.SkillData.points or 0) + 1
             ply:ChatPrint("[VORTEX] LEVEL UP! You are now level ".. ply.SkillData.level .." and earned 1 point!")
         else
