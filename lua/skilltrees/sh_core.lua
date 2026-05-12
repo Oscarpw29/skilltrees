@@ -175,7 +175,7 @@ SkillTrees.Tree = {
         }
     },
     ["Inquisitors"] = {
-        Teams = {TEAM_JEDI},
+        Teams = {"TEAM_SITHGI", "TEAM_OUTGLOW"},
         SteamIDs = {"STEAM_0:1:12345"},
         Color = Color(255,0,0),
         MRSGroup = "Inquisitorius",
