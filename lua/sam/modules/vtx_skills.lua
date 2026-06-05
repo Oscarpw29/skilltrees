@@ -53,22 +53,28 @@ command.new("vtx_givepts", "superadmin")
 end)
 :End()
 
--- COMMAND: Give Levels
+-- COMMAND: Give Levels (+ optional explicit points)
 command.new("vtx_givelevels")
     :SetPermission("vtx_givelevels", "superadmin")
     :AddArg("player")
     :AddArg("number", {hint = "levels", min = 1, round = true})
-    :Help("Give levels to a player, awarding skill points at the same rate as normal leveling (1 point per 3 levels).")
+    :AddArg("number", {hint = "points (0 = auto)", min = 0, round = true})
+    :Help("Give levels and skill points to a player. Set points to 0 to auto-award at the normal rate (1 per 2 levels).")
 
-    :OnExecute(function(ply, targets, amount)
+    :OnExecute(function(ply, targets, amount, bonusPoints)
         for i = 1, #targets do
             local target = targets[i]
             if target.SkillData then
                 local oldLevel = target.SkillData.level or 1
                 local newLevel = oldLevel + amount
 
-                -- Award points at the same rate as normal level-ups (every 3rd level)
-                local pointsEarned = math.floor(newLevel / 3) - math.floor(oldLevel / 3)
+                local pointsEarned
+                if bonusPoints and bonusPoints > 0 then
+                    pointsEarned = bonusPoints
+                else
+                    -- Auto: award at normal level-up rate (1 point every 2 levels)
+                    pointsEarned = math.floor(newLevel / 2) - math.floor(oldLevel / 2)
+                end
 
                 target.SkillData.level = newLevel
                 target.SkillData.points = (target.SkillData.points or 0) + pointsEarned

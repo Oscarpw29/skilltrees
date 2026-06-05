@@ -9,6 +9,7 @@ hook.Add("PlayerInitialSpawn", "SkillTrees_Load", function(ply)
     -- If data is already loaded (e.g. SAM re-fires this hook on rank change), don't wipe it
     if ply.SkillData and ply.SkillData.skills then return end
 
+    ply.SkillDataLoaded = false
     ply.SkillData = {
         xp = 0,
         level = 1,
@@ -35,6 +36,8 @@ hook.Add("PlayerInitialSpawn", "SkillTrees_Load", function(ply)
             print("[Skills] New player detected: " .. ply:Nick())
         end
 
+        ply.SkillDataLoaded = true
+
         -- Final Sync
         if SkillTrees.SaveAndSync then
             SkillTrees:SaveAndSync(ply)
@@ -51,7 +54,10 @@ end)
 -- This prevents any rank-change hooks from wiping skill data
 hook.Add("UserGroupSet", "SkillTrees_RankChange", function(ply, oldGroup, newGroup)
     if not IsValid(ply) or not ply.SkillData then return end
-    -- Save first to protect against anything downstream wiping data
+    -- Guard: don't save until PData has actually been loaded from disk.
+    -- UserGroupSet can fire within the 2-second load window; saving then would
+    -- overwrite real data with the empty defaults set at spawn.
+    if not ply.SkillDataLoaded then return end
     SkillTrees:SaveAndSync(ply)
     timer.Simple(1, function()
         if IsValid(ply) then
