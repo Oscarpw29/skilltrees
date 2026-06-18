@@ -54,7 +54,6 @@ net.Receive("vtx_skills_purchase", function(len, ply)
     SkillTrees:SaveAndSync(ply)
     SkillTrees:ApplyBuffs(ply)
 
-    ply:SetPData("vtx_skilldata", util.TableToJSON(ply.SkillData))
     net.Start("Vortex_RefreshWeapon")
     net.Send(ply)
 end)
@@ -80,6 +79,11 @@ end)
 
 function SkillTrees:SaveAndSync(ply)
     if not IsValid(ply) or not ply.SkillData then return end
+    -- Block any save while PData hasn't been read from disk yet.
+    -- ply.SkillDataLoaded is set true by sv_data.lua after the 2-second load timer.
+    -- Without this, anything that triggers SaveAndSync in that window (passive XP
+    -- timer, NPC kills, UserGroupSet) overwrites real data with empty defaults.
+    if not ply.SkillDataLoaded then return end
     local json = util.TableToJSON(ply.SkillData)
     ply:SetPData("vtx_skilldata", json)
 
