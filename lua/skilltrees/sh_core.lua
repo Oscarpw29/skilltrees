@@ -72,7 +72,7 @@ SkillTrees.Tree = {
     },
     ["212th Attack Battalion"] = {
         Color = Color(255, 140, 0),
-        MRSGroup = {"212th Attack Battalion"},
+        MRSGroup = {"212th Attack"},
         Skills = {
             ["212th_hp_1"] = {
                 name = "Frontline Conditioning",
