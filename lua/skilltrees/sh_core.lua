@@ -29,88 +29,40 @@ SkillTrees = SkillTrees or {}
 SkillTrees.Config = {}
 
 SkillTrees.Tree = {
-    ["Clone Troopers"] = {
-        Color = Color(255,255,255),
+    ["Navy"] = {
+        Color = Color(0, 120, 220),
+        MRSGroup = {"Republic Navy"},
         Skills = {
-            ["health_10"] = {
-                name = "Endurance",
-                description = "Increases health by 10",
+            ["navy_speed_1"] = {
+                name = "Fleet Footing",
+                description = "Increase move speed by 2% per level",
                 price = 1,
-                maxLevel = 10,
+                maxLevel = 5,
                 requirement = nil,
             },
-            ["hp_regen_2"] = {
-                name = "Nano Robotic Flesh",
-                description = "Regenerate health out of combat",
-                price = 3,
+            ["navy_speed_2"] = {
+                name = "Rapid Advance",
+                description = "Increase move speed by a further 3% per level",
+                price = 2,
                 maxLevel = 5,
-                requirement = "health_10",
+                requirement = "navy_speed_1",
             },
-            ["armor_5"] = {
-                name = "Armor Boost",
-                description = "Increase your armor by 5",
-                price = 1,
-                maxLevel = 10,
-                requirement = nil,
-            },
-            ["armor_regen_1"] = {
-                name = "Nanite Armor",
-                description = "Regenerate armor out of combat",
-                price = 3,
-                maxLevel = 3,
-                requirement = "armor_5",
-            },
-            ["tank"] = {
-                name = "Battle Hardened",
-                description = "Increase your health by 25, and armor by 10",
-                price = 3,
-                maxLevel = 5,
-                requirement = "armor_regen_1", "hp_regen_2",
-            },
-            ["damageres_1"] = {
-                name = "Brick Wall",
-                description = "Reduce damage you take from NPCs by 1% per level",
-                price = 5,
-                maxLevel = 5,
-                requirement = "tank",
-            },
-            ["firerate_5"] = {
-                name = "Weapons Training",
-                description = "Increase fire rate by 5% per level",
+            ["navy_reload"] = {
+                name = "Combat Efficiency",
+                description = "Increase reload speed by 5% per level",
                 price = 2,
                 maxLevel = 5,
                 requirement = nil,
             },
-            ["reloadspeed_5"] = {
-                name = "Quick Reload",
-                description = "Increase reload speed by 5% per level (up to 25% faster)",
+            ["navy_salary"] = {
+                name = "Officer Pay",
+                description = "Increase salary by 5% per level",
                 price = 2,
                 maxLevel = 5,
                 requirement = nil,
             },
-            ["bullet_damage_5"] = {
-                name = "Marksmanship",
-                description = "Increase bullet damage dealt by 5% per level",
-                price = 3,
-                maxLevel = 5,
-                requirement = "firerate_5",
-            },
-            ["salary_5"] = {
-                name = "Combat Pay",
-                description = "Increase your salary by 5% per level",
-                price = 2,
-                maxLevel = 10,
-                requirement = nil,
-            },
-            ["gold_bullets"] = {
-                name = "Golden Bullets",
-                description = "Earn 1% of your salary per kill",
-                price = 3,
-                maxLevel = 5,
-                requirement = nil,
-            },
-            ["xp_boost_10"] = {
-                name = "Veteran",
+            ["navy_xp"] = {
+                name = "Officer Training",
                 description = "Gain 10% more XP per level",
                 price = 3,
                 maxLevel = 5,
@@ -118,91 +70,170 @@ SkillTrees.Tree = {
             },
         }
     },
-    ["Commando"] = {
-        Color = Color(10,100,100),
-        Ranks = {"superadmin"},
-        Teams = {"501ST TC ARC TROOPER","327TH KC ARC TROOPER", "CG DES ARC TROOPER", "DU CC ARC TROOPER"},
+    ["212th Attack Battalion"] = {
+        Color = Color(255, 140, 0),
+        MRSGroup = {"212th Attack Battalion"},
         Skills = {
-            ["commando_training"] = {
-                name = "ARC Training",
-                description = "Increase health by 25, armor by 15",
-                price = 2, 
-                maxLevel = 10,
-                requirement = nil,
-            }
-        }
-    },
-    ["Alpha Arc"] = {
-        Teams = {"Head Staff On Duty"},
-        Color = Color(255,100,100),
-        Ranks = {"superadmin"},
-        Skills = {
-            ["tank_arc"] = {
-                name = "Enhanced Survivability",
-                description = "25 health, 10 armor, and 1% damage reduction from NPCs per level",
+            ["212th_hp_1"] = {
+                name = "Frontline Conditioning",
+                description = "Increase health by 10 per level",
                 price = 1,
                 maxLevel = 10,
                 requirement = nil,
             },
-            ["hp_regen_2"] = {
-                name = "Nano Robotic Armor",
-                description = "Regen 2 health every 5 seconds when out of combat",
-                price = 1,
-                maxLevel = 10,
-                requirement = nil,
-            },
-            ["armor_regen_1"] = {
-                name = "Nano Robotic Armor Coating",
-                description = "Regen 1 armor every 5 seconds when out of combat",
-                price = 1,
-                maxLevel = 10,
-                requirement = nil,
-            },
-            ["reloadspeed_25"] = {
-                name = "Quick Fingers",
-                description = "Increase reload speed by 2.5% per level.",
-                price = 1,
+            ["212th_hpregen"] = {
+                name = "Battle Recovery",
+                description = "Regenerate 2 health every 5 seconds out of combat",
+                price = 3,
                 maxLevel = 5,
-                requirement = nil,
+                requirement = "212th_hp_1",
             },
-            ["firerate_25"] = {
-                name = "Quick Fingers",
-                description = "Increase firerate by 2.5% per level.",
-                price = 1,
+            ["212th_hp_2"] = {
+                name = "Veteran's Body",
+                description = "Increase health by 20 and armor by 5 per level",
+                price = 4,
+                maxLevel = 5,
+                requirement = "212th_hpregen",
+            },
+            ["212th_res"] = {
+                name = "Unbreakable",
+                description = "Reduce damage taken by 1% per level",
+                price = 5,
+                maxLevel = 5,
+                requirement = "212th_hp_2",
+            },
+            ["212th_salary"] = {
+                name = "Combat Pay",
+                description = "Increase salary by 5% per level",
+                price = 2,
                 maxLevel = 5,
                 requirement = nil,
             },
         }
     },
-    ["Inquisitors"] = {
-        Teams = {"TEAM_SITHGI", "TEAM_OUTGLOW"},
-        SteamIDs = {"STEAM_0:1:12345"},
-        Color = Color(255,0,0),
-        MRSGroup = {"Inquisitorius", "Purge Troopers"},
+    ["501st Legion"] = {
+        Color = Color(30, 80, 200),
+        MRSGroup = {"501st Legion"},
         Skills = {
-            ["lscs_saber_dmg"] = {
+            ["501st_armor_1"] = {
+                name = "Heavy Plating",
+                description = "Increase armor by 5 per level",
+                price = 1,
+                maxLevel = 10,
+                requirement = nil,
+            },
+            ["501st_armorregen"] = {
+                name = "Self-Sealing Armor",
+                description = "Regenerate 1 armor every 5 seconds out of combat",
+                price = 3,
+                maxLevel = 5,
+                requirement = "501st_armor_1",
+            },
+            ["501st_armor_2"] = {
+                name = "Mechanized Shell",
+                description = "Increase armor by 15 and reduce damage taken by 1% per level",
+                price = 4,
+                maxLevel = 5,
+                requirement = "501st_armorregen",
+            },
+            ["501st_damage"] = {
+                name = "Shock Trooper",
+                description = "Increase bullet damage dealt by 5% per level",
+                price = 3,
+                maxLevel = 5,
+                requirement = nil,
+            },
+            ["501st_xp"] = {
+                name = "Battlefield Experience",
+                description = "Gain 10% more XP per level",
+                price = 3,
+                maxLevel = 5,
+                requirement = nil,
+            },
+        }
+    },
+    ["Coruscant Guard"] = {
+        Color = Color(180, 30, 30),
+        MRSGroup = {"Coruscant Guard"},
+        Skills = {
+            ["cg_hp_armor"] = {
+                name = "Law Enforcement Training",
+                description = "Increase health by 8 and armor by 4 per level",
+                price = 2,
+                maxLevel = 10,
+                requirement = nil,
+            },
+            ["cg_hpregen"] = {
+                name = "Field Medic",
+                description = "Regenerate 2 health every 5 seconds out of combat",
+                price = 3,
+                maxLevel = 5,
+                requirement = "cg_hp_armor",
+            },
+            ["cg_armorregen"] = {
+                name = "Reinforced Gear",
+                description = "Regenerate 1 armor every 5 seconds out of combat",
+                price = 3,
+                maxLevel = 5,
+                requirement = "cg_hp_armor",
+            },
+            ["cg_res"] = {
+                name = "Riot Conditioning",
+                description = "Reduce damage taken by 1% per level",
+                price = 5,
+                maxLevel = 5,
+                requirement = "cg_hpregen",
+            },
+            ["cg_salary"] = {
+                name = "Guard Pay",
+                description = "Increase salary by 5% per level",
+                price = 2,
+                maxLevel = 5,
+                requirement = nil,
+            },
+        }
+    },
+    ["Jedi Order"] = {
+        Color = Color(0, 180, 255),
+        MRSGroup = {"Jedi Order"},
+        Skills = {
+            ["jedi_force_regen"] = {
+                name = "Force Attunement",
+                description = "Regenerate 5 force points every 2 seconds",
+                price = 2,
+                maxLevel = 5,
+                requirement = nil,
+            },
+            ["jedi_saber_dmg"] = {
                 name = "Saber Mastery",
                 description = "Increase lightsaber damage by 5% per level",
                 price = 3,
                 maxLevel = 5,
                 requirement = nil,
             },
-            ["lscs_force_regen_5"] = {
-                name = "Force Renewal",
-                description = "Regenerate 5 force points every 2 seconds",
-                price = 3,
-                maxLevel = 5,
-                requirement = nil,
-            },
-            ["lscs_block_5"] = {
-                name = "Blade Guard",
+            ["jedi_block"] = {
+                name = "Blade Defense",
                 description = "Reduce incoming lightsaber damage by 5% per level",
                 price = 3,
                 maxLevel = 5,
                 requirement = nil,
             },
+            ["jedi_hp_regen"] = {
+                name = "Force Vitality",
+                description = "Regenerate 2 health every 5 seconds through the Force",
+                price = 3,
+                maxLevel = 5,
+                requirement = "jedi_force_regen",
+            },
+            ["jedi_saber_dmg_2"] = {
+                name = "Form Mastery",
+                description = "Increase lightsaber damage by a further 8% per level",
+                price = 5,
+                maxLevel = 3,
+                requirement = "jedi_saber_dmg",
+            },
         }
-    }
+    },
 }
 
 SkillTrees.Buffs = {
@@ -227,7 +258,37 @@ SkillTrees.Buffs = {
     ["lscs_force_regen_5"] = { lscs_force_regen = 5 },
     ["lscs_block_5"] = { lscs_block = 0.05 },
     ["commando_training"] = { hp = 25, armor = 15, resistance = 0.01},
-    ["speed"] = { movespeed = 0.02}
+    ["speed"] = { movespeed = 0.02},
+    -- Navy
+    ["navy_speed_1"] = { movespeed = 0.02 },
+    ["navy_speed_2"] = { movespeed = 0.03 },
+    ["navy_reload"] = { reloadspeed = 0.05 },
+    ["navy_salary"] = { salary_bonus = 0.05 },
+    ["navy_xp"] = { xp_boost = 0.1 },
+    -- 212th Attack Battalion
+    ["212th_hp_1"] = { hp = 10 },
+    ["212th_hpregen"] = { hpregen = 2 },
+    ["212th_hp_2"] = { hp = 20, armor = 5 },
+    ["212th_res"] = { resistance = 0.01 },
+    ["212th_salary"] = { salary_bonus = 0.05 },
+    -- 501st Legion
+    ["501st_armor_1"] = { armor = 5 },
+    ["501st_armorregen"] = { armorregen = 1 },
+    ["501st_armor_2"] = { armor = 15, resistance = 0.01 },
+    ["501st_damage"] = { damage = 0.05 },
+    ["501st_xp"] = { xp_boost = 0.1 },
+    -- Coruscant Guard
+    ["cg_hp_armor"] = { hp = 8, armor = 4 },
+    ["cg_hpregen"] = { hpregen = 2 },
+    ["cg_armorregen"] = { armorregen = 1 },
+    ["cg_res"] = { resistance = 0.01 },
+    ["cg_salary"] = { salary_bonus = 0.05 },
+    -- Jedi Order
+    ["jedi_force_regen"] = { lscs_force_regen = 5 },
+    ["jedi_saber_dmg"] = { lscs_damage = 0.05 },
+    ["jedi_block"] = { lscs_block = 0.05 },
+    ["jedi_hp_regen"] = { hpregen = 2 },
+    ["jedi_saber_dmg_2"] = { lscs_damage = 0.08 },
 }
 
 SkillTrees.RankMultipliers = {
