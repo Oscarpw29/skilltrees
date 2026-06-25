@@ -100,7 +100,7 @@ SkillTrees.Tree = {
         }
     },
     -- 212th: health focus. HP cap 150 (hp_1 x10=100 + hp_2 x5=50), armor cap 25.
-    ["212th Attack Battalion"] = {
+    ["212th Attack"] = {
         Color = Color(255, 140, 0),
         MRSGroup = {"212th Attack"},
         Skills = {
