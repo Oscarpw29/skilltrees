@@ -97,6 +97,7 @@ function SkillTrees:ApplyBuffs(ply)
     
     local buffs = SkillTrees:CalculateBuffs(ply)
     local job = ply:getJobTable()
+    if not job then return end
 
     -- 1. Get the new clean variables from the job file
     local baseHP = job.maxhealth or 100
