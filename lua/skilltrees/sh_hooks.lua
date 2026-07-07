@@ -1,4 +1,5 @@
 hook.Add("ArcCW_Mod_Mult_RPM", "Vortex_Test_Logic", function(wep, mult)
+    if not SkillTrees or not SkillTrees.CalculateBuffs then return mult end
     local ply = wep:GetOwner()
     if not IsValid(ply) or not ply.SkillData then return mult end
 
@@ -18,6 +19,7 @@ end)
 -- TFA_GetStat is Shared (runs both client prediction and server), so this file is the right place.
 -- Stat names come from SWEP table structure: Primary.RPM, ProceduralReloadTime, LoopedReloadInsertTime.
 hook.Add("TFA_GetStat", "Vortex_TFA_WeaponStats", function(wep, stat, value)
+    if not SkillTrees or not SkillTrees.CalculateBuffs then return end
     local ply = wep:GetOwner()
     if not IsValid(ply) or not ply:IsPlayer() or not ply.SkillData then return end
 
