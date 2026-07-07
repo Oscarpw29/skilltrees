@@ -127,6 +127,7 @@ hook.Add("InitPostEntity", "Vortex_SalaryBonus_Setup", function()
     local delay = (GAMEMODE and GAMEMODE.Config and GAMEMODE.Config.paydelay) or 160
 
     timer.Create("Vortex_SalaryBonus", delay, 0, function()
+        if not SkillTrees or not SkillTrees.CalculateBuffs then return end
         for _, ply in ipairs(player.GetAll()) do
             if not IsValid(ply) or not ply.SkillData or not ply:Alive() then continue end
 
@@ -184,9 +185,9 @@ end
 
 hook.Add("PlayerSpawn", "Vortex_Skills_JobOverride", function(ply)
     timer.Simple(0.5, function()
-        if IsValid(ply) then
+        if IsValid(ply) and SkillTrees and SkillTrees.ApplyBuffs then
             SkillTrees:ApplyBuffs(ply)
-        end 
+        end
     end)
 end)
 
@@ -223,6 +224,7 @@ end)
 local COMBAT_COOLDOWN = 15
 
 hook.Add("SetupMove", "Vortex_Skills_Speed", function(ply, mv, cmd)
+    if not SkillTrees or not SkillTrees.CalculateBuffs then return end
     local buffs = SkillTrees:CalculateBuffs(ply)
 
     if buffs and buffs.movespeed and buffs.movespeed > 0 then
@@ -234,6 +236,7 @@ hook.Add("SetupMove", "Vortex_Skills_Speed", function(ply, mv, cmd)
 end)
 
 timer.Create("Vortex_Skill_RegenTimer", 2, 0, function()
+    if not SkillTrees or not SkillTrees.CalculateBuffs then return end
     for _, ply in ipairs(player.GetAll()) do
         if not ply:Alive() or not ply.SkillData then continue end
         
@@ -269,10 +272,9 @@ timer.Create("Vortex_Skill_RegenTimer", 2, 0, function()
 end)
 
 hook.Add("ScalePlayerDamage", "Vortex_Skills_CombatAndResistance", function(ply, hitgroup, dmginfo)
-    -- 1. Track Combat for Regen
     ply.Vortex_LastDamageTime = CurTime()
+    if not SkillTrees or not SkillTrees.CalculateBuffs then return end
 
-    -- 2. Handle Resistance
     local buffs = SkillTrees:CalculateBuffs(ply)
     if buffs and buffs.resistance and buffs.resistance > 0 then
         -- math.max(0.1) prevents players from being 100% immune (god mode)
@@ -300,6 +302,7 @@ end)
 -- IsTFAWeapon is the correct TFA marker field (not wep.TFA).
 -- Fire rate and reload speed are handled in sh_hooks.lua via TFA_GetStat.
 local function GoldenBulletsReward(attacker)
+    if not SkillTrees or not SkillTrees.CalculateBuffs then return end
     if not IsValid(attacker) or not attacker:IsPlayer() or not attacker.SkillData then return end
     local buffs = SkillTrees:CalculateBuffs(attacker)
     if not buffs.salary_per_kill or buffs.salary_per_kill <= 0 then return end
@@ -320,6 +323,7 @@ hook.Add("OnNPCKilled", "Vortex_GoldenBullets_NPCKill", function(npc, attacker, 
 end)
 
 hook.Add("EntityTakeDamage", "Vortex_LSCS_Combat", function(target, dmginfo)
+    if not SkillTrees or not SkillTrees.CalculateBuffs then return end
     if not dmginfo:IsDamageType(DMG_ENERGYBEAM) then return end
 
     local attacker = dmginfo:GetAttacker()
