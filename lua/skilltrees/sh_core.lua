@@ -288,6 +288,76 @@ SkillTrees.Tree = {
             },
         }
     },
+    -- Shock Vanguard: donator melee troopers (Volt, Charger, Dreadnaught). HP cap 100, armor cap 25.
+    ["Shock Vanguard"] = {
+        Color = Color(0, 210, 255),
+        Teams = {TEAM_212VOLT, TEAM_CGCRG, TEAM_501DREAD},
+        Skills = {
+            ["vanguard_hp"] = {
+                name = "Iron Constitution",
+                description = "Increase health by 10 per level",
+                price = 1,
+                maxLevel = 10,
+                requirement = nil,
+            },
+            ["vanguard_armor"] = {
+                name = "Reinforced Plating",
+                description = "Increase armor by 5 per level",
+                price = 1,
+                maxLevel = 5,
+                requirement = nil,
+            },
+            ["vanguard_melee_1"] = {
+                name = "Shock Strike",
+                description = "Increase melee damage by 5% per level",
+                price = 2,
+                maxLevel = 5,
+                requirement = nil,
+            },
+            ["vanguard_speed"] = {
+                name = "Assault Charge",
+                description = "Increase move speed by 2% per level",
+                price = 2,
+                maxLevel = 5,
+                requirement = nil,
+            },
+            ["vanguard_res"] = {
+                name = "Unyielding",
+                description = "Reduce all incoming damage by 3% per level",
+                price = 3,
+                maxLevel = 5,
+                requirement = "vanguard_hp",
+            },
+            ["vanguard_hpregen"] = {
+                name = "Combat Endurance",
+                description = "Regenerate 3 health every 2 seconds out of combat",
+                price = 3,
+                maxLevel = 3,
+                requirement = "vanguard_hp",
+            },
+            ["vanguard_melee_2"] = {
+                name = "Overcharge",
+                description = "Increase melee damage by a further 8% per level",
+                price = 4,
+                maxLevel = 3,
+                requirement = "vanguard_melee_1",
+            },
+            ["vanguard_block"] = {
+                name = "Combat Guard",
+                description = "Reduce incoming melee damage by 4% per level",
+                price = 3,
+                maxLevel = 3,
+                requirement = "vanguard_melee_1",
+            },
+            ["vanguard_salary"] = {
+                name = "Veteran's Pay",
+                description = "Increase salary by 5% per level",
+                price = 2,
+                maxLevel = 3,
+                requirement = nil,
+            },
+        }
+    },
     -- Jedi: force focus. HP cap 50, armor cap 50 (Force-derived).
     ["Jedi Order"] = {
         Color = Color(0, 180, 255),
@@ -420,6 +490,16 @@ SkillTrees.Buffs = {
     ["cg_res"]          = { resistance = 0.01 },
     ["cg_damage"]       = { damage = 0.03 },
     ["cg_salary"]       = { salary_bonus = 0.05 },
+    -- Shock Vanguard
+    ["vanguard_hp"]       = { hp = 10 },
+    ["vanguard_armor"]    = { armor = 5 },
+    ["vanguard_melee_1"]  = { lscs_damage = 0.05 },
+    ["vanguard_speed"]    = { movespeed = 0.02 },
+    ["vanguard_res"]      = { resistance = 0.03 },
+    ["vanguard_hpregen"]  = { hpregen = 3 },
+    ["vanguard_melee_2"]  = { lscs_damage = 0.08 },
+    ["vanguard_block"]    = { lscs_block = 0.04 },
+    ["vanguard_salary"]   = { salary_bonus = 0.05 },
     -- Jedi Order
     ["jedi_force_regen"]  = { lscs_force_regen = 5 },
     ["jedi_force_regen_2"]= { lscs_force_regen = 10 },
