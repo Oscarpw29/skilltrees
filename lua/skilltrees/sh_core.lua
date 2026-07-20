@@ -358,76 +358,76 @@ SkillTrees.Tree = {
             },
         }
     },
-    -- 21st Nova Corps: scout/recon TFA troopers. Speed and precision focus. HP cap +80, armor cap +15.
-    ["21st Nova Corps"] = {
-        Color = Color(0, 200, 80),
-        MRSGroup = {"21st Nova Corps"},
+    -- 21st Galactic Marines: heavy frontline TFA troopers. HP cap +130, armor cap +50.
+    ["21st Galactic Marines"] = {
+        Color = Color(150, 0, 0),
+        MRSGroup = {"21st Galactic Marines"},
         Skills = {
-            ["nova_speed_1"] = {
-                name = "Scout's Pace",
-                description = "Increase move speed by 2% per level",
-                price = 1,
-                maxLevel = 5,
-                requirement = nil,
-            },
-            ["nova_speed_2"] = {
-                name = "Nova Rush",
-                description = "Increase move speed by a further 3% per level",
-                price = 2,
-                maxLevel = 3,
-                requirement = "nova_speed_1",
-            },
-            ["nova_hp"] = {
-                name = "Field Conditioning",
-                description = "Increase health by 8 per level",
+            ["gm_hp_1"] = {
+                name = "Marine Conditioning",
+                description = "Increase health by 10 per level",
                 price = 1,
                 maxLevel = 10,
                 requirement = nil,
             },
-            ["nova_hpregen"] = {
-                name = "Field Recovery",
+            ["gm_hp_2"] = {
+                name = "Hardened Veteran",
+                description = "Increase health by 8 and armor by 3 per level",
+                price = 3,
+                maxLevel = 5,
+                requirement = "gm_hp_1",
+            },
+            ["gm_hpregen"] = {
+                name = "Combat Medic",
                 description = "Regenerate 2 health every 5 seconds out of combat",
                 price = 3,
                 maxLevel = 3,
-                requirement = "nova_hp",
+                requirement = "gm_hp_1",
             },
-            ["nova_armor"] = {
-                name = "Scout Plating",
-                description = "Increase armor by 3 per level",
+            ["gm_armor"] = {
+                name = "Heavy Plating",
+                description = "Increase armor by 5 per level",
                 price = 1,
                 maxLevel = 5,
                 requirement = nil,
             },
-            ["nova_firerate"] = {
-                name = "Suppressing Fire",
+            ["gm_armorregen"] = {
+                name = "Self-Sealing Gear",
+                description = "Regenerate 1 armor every 5 seconds out of combat",
+                price = 2,
+                maxLevel = 3,
+                requirement = "gm_armor",
+            },
+            ["gm_res"] = {
+                name = "Unbreakable",
+                description = "Reduce all incoming damage by 2% per level",
+                price = 4,
+                maxLevel = 5,
+                requirement = "gm_hp_2",
+            },
+            ["gm_firerate"] = {
+                name = "Overwhelming Force",
                 description = "Increase fire rate by 5% per level",
                 price = 2,
                 maxLevel = 5,
                 requirement = nil,
             },
-            ["nova_reload"] = {
-                name = "Quick Mag",
-                description = "Increase reload speed by 5% per level",
-                price = 2,
-                maxLevel = 5,
-                requirement = "nova_firerate",
-            },
-            ["nova_damage"] = {
-                name = "Nova Precision",
+            ["gm_damage"] = {
+                name = "Marine Firepower",
                 description = "Increase bullet damage by 5% per level",
                 price = 3,
                 maxLevel = 5,
-                requirement = "nova_firerate",
+                requirement = "gm_firerate",
             },
-            ["nova_salary"] = {
-                name = "Recon Pay",
+            ["gm_salary"] = {
+                name = "Marine Pay",
                 description = "Increase salary by 5% per level",
                 price = 2,
                 maxLevel = 3,
                 requirement = nil,
             },
-            ["nova_xp"] = {
-                name = "Combat Intelligence",
+            ["gm_xp"] = {
+                name = "Battlefield Experience",
                 description = "Gain 10% more XP per level",
                 price = 3,
                 maxLevel = 5,
@@ -577,17 +577,17 @@ SkillTrees.Buffs = {
     ["vanguard_melee_2"]  = { lscs_damage = 0.08 },
     ["vanguard_block"]    = { lscs_block = 0.04 },
     ["vanguard_salary"]   = { salary_bonus = 0.05 },
-    -- 21st Nova Corps
-    ["nova_speed_1"]  = { movespeed = 0.02 },
-    ["nova_speed_2"]  = { movespeed = 0.03 },
-    ["nova_hp"]       = { hp = 8 },
-    ["nova_hpregen"]  = { hpregen = 2 },
-    ["nova_armor"]    = { armor = 3 },
-    ["nova_firerate"] = { firerate = 0.05 },
-    ["nova_reload"]   = { reloadspeed = 0.05 },
-    ["nova_damage"]   = { damage = 0.05 },
-    ["nova_salary"]   = { salary_bonus = 0.05 },
-    ["nova_xp"]       = { xp_boost = 0.1 },
+    -- 21st Galactic Marines
+    ["gm_hp_1"]       = { hp = 10 },
+    ["gm_hp_2"]       = { hp = 8, armor = 3 },
+    ["gm_hpregen"]    = { hpregen = 2 },
+    ["gm_armor"]      = { armor = 5 },
+    ["gm_armorregen"] = { armorregen = 1 },
+    ["gm_res"]        = { resistance = 0.02 },
+    ["gm_firerate"]   = { firerate = 0.05 },
+    ["gm_damage"]     = { damage = 0.05 },
+    ["gm_salary"]     = { salary_bonus = 0.05 },
+    ["gm_xp"]         = { xp_boost = 0.1 },
     -- Jedi Order
     ["jedi_force_regen"]  = { lscs_force_regen = 5 },
     ["jedi_force_regen_2"]= { lscs_force_regen = 10 },
