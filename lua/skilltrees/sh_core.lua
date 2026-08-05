@@ -1,4 +1,4 @@
--- SkillTrees.Skills = {
+﻿-- SkillTrees.Skills = {
 --     strength_1 = {
 --         name = "Strength I",
 --         maxLevel = 1,
@@ -354,83 +354,6 @@ SkillTrees.Tree = {
                 description = "Increase salary by 5% per level",
                 price = 2,
                 maxLevel = 3,
-                requirement = nil,
-            },
-        }
-    },
-    -- 21st Galactic Marines: heavy frontline TFA troopers. HP cap +130, armor cap +50.
-    ["21st Galactic Marines"] = {
-        Color = Color(150, 0, 0),
-        MRSGroup = {"21st Galactic Marines"},
-        Skills = {
-            ["gm_hp_1"] = {
-                name = "Marine Conditioning",
-                description = "Increase health by 10 per level",
-                price = 1,
-                maxLevel = 10,
-                requirement = nil,
-            },
-            ["gm_hp_2"] = {
-                name = "Hardened Veteran",
-                description = "Increase health by 8 and armor by 3 per level",
-                price = 3,
-                maxLevel = 5,
-                requirement = "gm_hp_1",
-            },
-            ["gm_hpregen"] = {
-                name = "Combat Medic",
-                description = "Regenerate 2 health every 5 seconds out of combat",
-                price = 3,
-                maxLevel = 3,
-                requirement = "gm_hp_1",
-            },
-            ["gm_armor"] = {
-                name = "Heavy Plating",
-                description = "Increase armor by 5 per level",
-                price = 1,
-                maxLevel = 5,
-                requirement = nil,
-            },
-            ["gm_armorregen"] = {
-                name = "Self-Sealing Gear",
-                description = "Regenerate 1 armor every 5 seconds out of combat",
-                price = 2,
-                maxLevel = 3,
-                requirement = "gm_armor",
-            },
-            ["gm_res"] = {
-                name = "Unbreakable",
-                description = "Reduce all incoming damage by 2% per level",
-                price = 4,
-                maxLevel = 5,
-                requirement = "gm_hp_2",
-            },
-            ["gm_firerate"] = {
-                name = "Overwhelming Force",
-                description = "Increase fire rate by 5% per level",
-                price = 2,
-                maxLevel = 5,
-                requirement = nil,
-            },
-            ["gm_damage"] = {
-                name = "Marine Firepower",
-                description = "Increase bullet damage by 5% per level",
-                price = 3,
-                maxLevel = 5,
-                requirement = "gm_firerate",
-            },
-            ["gm_salary"] = {
-                name = "Marine Pay",
-                description = "Increase salary by 5% per level",
-                price = 2,
-                maxLevel = 3,
-                requirement = nil,
-            },
-            ["gm_xp"] = {
-                name = "Battlefield Experience",
-                description = "Gain 10% more XP per level",
-                price = 3,
-                maxLevel = 5,
                 requirement = nil,
             },
         }
