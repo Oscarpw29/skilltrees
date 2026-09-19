@@ -157,6 +157,12 @@ end
 function SkillTrees:AddXP(ply, amount)
     if not IsValid(ply) or not ply.SkillData then return end
 
+    if (ply.SkillData.level or 1) >= self.MaxLevel then
+        ply.SkillData.level = self.MaxLevel
+        ply.SkillData.xp = 0
+        return
+    end
+
     local multiplier = self:GetPlayerMultipliers(ply)
     local finalAmount = math.Round(amount*multiplier)
 
@@ -164,7 +170,7 @@ function SkillTrees:AddXP(ply, amount)
     ply.SkillData.level = ply.SkillData.level or 1
 
     local required = self:GetRequiredXP(ply.SkillData.level)
-    while ply.SkillData.xp >= required do
+    while ply.SkillData.level < self.MaxLevel and ply.SkillData.xp >= required do
         ply.SkillData.xp = ply.SkillData.xp - required
         ply.SkillData.level = ply.SkillData.level + 1
         if ply.SkillData.level > 0 and (ply.SkillData.level % 2 == 0) then
@@ -179,6 +185,10 @@ function SkillTrees:AddXP(ply, amount)
 
         
         ply:EmitSound("garrysmod/save_load1.wav")
+    end
+    if ply.SkillData.level >= self.MaxLevel then
+        ply.SkillData.level = self.MaxLevel
+        ply.SkillData.xp = 0
     end
     self:SaveAndSync(ply)
 end

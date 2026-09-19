@@ -38,6 +38,6 @@ hook.Add("HUDPaint", "Vortex_XP_HUD", function()
         local progress = math.Clamp(curXP / reqXP, 0, 1)
         draw.RoundedBox(4, x + 2, y + 2, (w - 4) * progress, h - 4, Color(155, 89, 182, displayAlpha))
 
-        draw.SimpleText("LEVEL " .. curLvl .. " - " .. curXP .. "/" .. reqXP .. " XP", "DermaDefaultBold", x + (w/2), y + (h/2), Color(255, 255, 255, displayAlpha), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+        draw.SimpleText(curLvl >= SkillTrees.MaxLevel and ("LEVEL " .. curLvl .. " - MAX") or ("LEVEL " .. curLvl .. " - " .. curXP .. "/" .. reqXP .. " XP"), "DermaDefaultBold", x + (w/2), y + (h/2), Color(255, 255, 255, displayAlpha), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
     end
 end)

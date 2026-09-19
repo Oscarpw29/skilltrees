@@ -66,7 +66,8 @@ command.new("vtx_givelevels")
             local target = targets[i]
             if target.SkillData then
                 local oldLevel = target.SkillData.level or 1
-                local newLevel = oldLevel + amount
+                local newLevel = math.min(oldLevel + amount, SkillTrees.MaxLevel)
+                if newLevel <= oldLevel then continue end
 
                 local pointsEarned
                 if bonusPoints and bonusPoints > 0 then
@@ -83,7 +84,7 @@ command.new("vtx_givelevels")
                     SkillTrees:SaveAndSync(target)
                 end
 
-                target:ChatPrint("[VORTEX] An admin gave you " .. amount .. " levels! You are now level " .. newLevel .. ".")
+                target:ChatPrint("[VORTEX] An admin gave you " .. (newLevel - oldLevel) .. " levels! You are now level " .. newLevel .. ".")
                 if pointsEarned > 0 then
                     target:ChatPrint("[VORTEX] You earned " .. pointsEarned .. " skill point(s)!")
                 end

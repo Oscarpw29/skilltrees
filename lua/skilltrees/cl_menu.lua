@@ -115,9 +115,11 @@ local function ShowTree(catName, catData, container)
 
     -- Scroll area (leaves room for detail strip)
     local DETAIL_H = 72
+    local specs    = catData.Specializations
+    local SPEC_H   = specs and 118 or 0
     local scroll   = vgui.Create("DScrollPanel", container)
     scroll:SetPos(0, 0)
-    scroll:SetSize(container:GetWide(), container:GetTall() - DETAIL_H - 1)
+    scroll:SetSize(container:GetWide(), container:GetTall() - DETAIL_H - SPEC_H - 1)
 
     local vbar = scroll:GetVBar()
     vbar:SetWide(5)
@@ -133,6 +135,10 @@ local function ShowTree(catName, catData, container)
         draw.RoundedBox(0, 0, 0, w, h, Color(15, 15, 19))
 
         local pd = LocalPlayer().SkillData or {}
+
+        if not next(skills) then
+            draw.SimpleText("SKILLS COMING SOON", "VTX_Title", w / 2, h / 2, Color(70, 70, 82), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+        end
 
         -- Connections
         for _, conn in ipairs(connections) do
@@ -242,6 +248,37 @@ local function ShowTree(catName, catData, container)
         end
     end
 
+    -- Specialization strip (unlocks at level 15; content not released yet)
+    if specs then
+        local sp = vgui.Create("DPanel", container)
+        sp:SetPos(0, container:GetTall() - DETAIL_H - SPEC_H)
+        sp:SetSize(container:GetWide(), SPEC_H)
+        local names = {}
+        for n in pairs(specs) do table.insert(names, n) end
+        table.sort(names)
+        sp.Paint = function(self, w, h)
+            surface.SetDrawColor(30, 30, 38)
+            surface.DrawLine(0, 0, w, 0)
+            draw.RoundedBox(0, 0, 1, w, h - 1, Color(17, 17, 22))
+            local lvl = (LocalPlayer().SkillData or {}).level or 1
+            draw.SimpleText("SPECIALIZATION", "VTX_Sub", 16, 16, Color(150, 150, 165), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+            local cw, ch, x = 200, 68, 16
+            for _, n in ipairs(names) do
+                local sd = specs[n]
+                draw.RoundedBox(8, x, 34, cw, ch, Color(22, 22, 27))
+                surface.SetDrawColor(48, 48, 55)
+                surface.DrawOutlinedRect(x, 34, cw, ch)
+                draw.SimpleText(sd.comingSoon and "???" or sd.name, "VTX_NodeName", x + cw / 2, 34 + 18, Color(95, 95, 105), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+                draw.SimpleText("COMING SOON", "VTX_Sub", x + cw / 2, 34 + 40, Color(200, 160, 40), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+                local need = sd.unlockLevel or 15
+                if lvl < need then
+                    draw.SimpleText("Unlocks at Level " .. need, "VTX_Tiny", x + cw / 2, 34 + 58, Color(75, 75, 82), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+                end
+                x = x + cw + 12
+            end
+        end
+    end
+
     -- Detail strip at the bottom of the content panel
     local detail = vgui.Create("DPanel", container)
     detail:SetPos(0, container:GetTall() - DETAIL_H)
@@ -312,11 +349,12 @@ function OpenSkillMenu()
         -- XP bar in header
         local bx = w - 250
         draw.SimpleText("LVL " .. curLvl, "VTX_Sub", bx, HEADER_H / 2 - 7, Color(130, 130, 148), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+        local isMax = curLvl >= SkillTrees.MaxLevel
         local bw2 = 180
         draw.RoundedBox(3, bx + 52, HEADER_H / 2 - 5, bw2, 8, Color(0, 0, 0, 120))
-        local xpProg = reqXP > 0 and math.Clamp(curXP / reqXP, 0, 1) or 0
+        local xpProg = isMax and 1 or (reqXP > 0 and math.Clamp(curXP / reqXP, 0, 1) or 0)
         draw.RoundedBox(3, bx + 52, HEADER_H / 2 - 5, math.floor(bw2 * xpProg), 8, Color(110, 70, 190))
-        draw.SimpleText(curXP .. " / " .. reqXP, "VTX_Tiny", bx + 52 + bw2 / 2, HEADER_H / 2 - 2, Color(150, 150, 165), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+        draw.SimpleText(isMax and "MAX LEVEL" or (curXP .. " / " .. reqXP), "VTX_Tiny", bx + 52 + bw2 / 2, HEADER_H / 2 - 2, Color(150, 150, 165), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
     end
 
     -- Close button
@@ -382,7 +420,12 @@ function OpenSkillMenu()
     end
 
     for catName, catData in pairs(SkillTrees.Tree) do
-        local access = (not catData.Teams and not catData.MRSGroup and not catData.SteamIDs and not catData.Ranks)
+        local access = (not catData.Teams and not catData.MRSGroup and not catData.SteamIDs and not catData.Ranks and not catData.JobPatterns)
+        if catData.JobPatterns then
+            for _, pat in pairs(catData.JobPatterns) do
+                if string.find(myJobName, pat) then access = true break end
+            end
+        end
         if catData.Teams then
             for _, v in pairs(catData.Teams) do
                 if v == myTeam or v == myJobName then access = true break end
