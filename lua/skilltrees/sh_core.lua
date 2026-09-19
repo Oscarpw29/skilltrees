@@ -31,11 +31,11 @@ SkillTrees.Config = {}
 SkillTrees.MaxLevel = 15
 
 SkillTrees.Tree = {
-    -- Unit trees ship empty; skills are added in later updates. JobPatterns match the player's job name (see cl_menu.lua).
+    -- Unit trees ship empty; skills are added in later updates. MRSGroup must match the player's MRS group exactly.
     -- Specializations unlock at unlockLevel and show COMING SOON until comingSoon is removed.
     ["212th"] = {
         Color = Color(255, 140, 0),
-        JobPatterns = {"^212th"},
+        MRSGroup = {"212th Attack"},
         Skills = {},
         Specializations = {
             ["Scout"] = {
@@ -56,7 +56,7 @@ SkillTrees.Tree = {
     },
     ["104th"] = {
         Color = Color(150, 60, 60),
-        JobPatterns = {"^104th"},
+        MRSGroup = {"104th Battallion"},
         Skills = {},
         Specializations = {
             ["Scout"] = {
@@ -77,7 +77,7 @@ SkillTrees.Tree = {
     },
     ["Shock"] = {
         Color = Color(0, 210, 255),
-        JobPatterns = {"Shock"},
+        MRSGroup = {"Shock"},
         Skills = {},
         Specializations = {
             ["Scout"] = {

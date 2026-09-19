@@ -420,12 +420,7 @@ function OpenSkillMenu()
     end
 
     for catName, catData in pairs(SkillTrees.Tree) do
-        local access = (not catData.Teams and not catData.MRSGroup and not catData.SteamIDs and not catData.Ranks and not catData.JobPatterns)
-        if catData.JobPatterns then
-            for _, pat in pairs(catData.JobPatterns) do
-                if string.find(myJobName, pat) then access = true break end
-            end
-        end
+        local access = (not catData.Teams and not catData.MRSGroup and not catData.SteamIDs and not catData.Ranks)
         if catData.Teams then
             for _, v in pairs(catData.Teams) do
                 if v == myTeam or v == myJobName then access = true break end
