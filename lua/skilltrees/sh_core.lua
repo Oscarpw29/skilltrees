@@ -56,7 +56,7 @@ SkillTrees.Tree = {
     },
     ["104th"] = {
         Color = Color(150, 60, 60),
-        MRSGroup = {"104th Battallion"},
+        MRSGroup = {"104th Mechanized"},
         Skills = {},
         Specializations = {
             ["Scout"] = {

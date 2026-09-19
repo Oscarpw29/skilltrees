@@ -2,12 +2,18 @@ surface.CreateFont("VTX_Title",    { font = "Roboto", size = 22, weight = 800 })
 surface.CreateFont("VTX_Sub",      { font = "Roboto", size = 14, weight = 500 })
 surface.CreateFont("VTX_NodeName", { font = "Roboto", size = 13, weight = 700 })
 surface.CreateFont("VTX_Small",    { font = "Roboto", size = 11, weight = 400 })
+surface.CreateFont("VTX_Banner",   { font = "Roboto", size = 32, weight = 800 })
+surface.CreateFont("VTX_Rank",     { font = "Roboto", size = 12, weight = 800 })
 surface.CreateFont("VTX_Tiny",     { font = "Roboto", size = 10, weight = 600 })
 
 local MainMenu
-local NODE_W, NODE_H  = 142, 72
-local COL_GAP, ROW_GAP = 68, 14
-local TREE_PAD         = 24
+local ICON       = 60   -- square talent icon
+local CELL_W     = 128  -- horizontal slot per node
+local LABEL_H    = 18   -- name label under the icon
+local ROW_H      = 118  -- vertical slot per tier
+local TREE_TOP   = 84   -- banner height above the first tier
+local TREE_PAD   = 28
+local GOLD       = Color(235, 190, 70)
 
 -- Shared hover state written by node buttons, read by canvas Paint
 local treeHover = {}
@@ -16,7 +22,7 @@ local COLS = {
     locked    = { bg = Color(22,22,27),   edge = Color(48,48,55),   text = Color(75,75,82),   bar = Color(48,48,55)    },
     available = { bg = Color(20,30,52),   edge = Color(52,96,178),  text = Color(170,205,255), bar = Color(52,96,178)   },
     partial   = { bg = Color(20,40,28),   edge = Color(50,148,76),  text = Color(155,238,175), bar = Color(50,148,76)   },
-    maxed     = { bg = Color(26,50,22),   edge = Color(65,185,85),  text = Color(95,250,115),  bar = Color(65,185,85)   },
+    maxed     = { bg = Color(50,40,14),   edge = Color(235,190,70), text = Color(255,220,120), bar = Color(235,190,70)  },
 }
 
 local function Trunc(s, n)
@@ -40,7 +46,17 @@ local function GetSkillStatus(skillID, info, plyData)
     return "available", cur, max
 end
 
-local function BuildLayout(skillsTable)
+local function Initials(name)
+    local out = ""
+    for w in string.gmatch(name, "%a+") do
+        out = out .. w:sub(1, 1):upper()
+        if #out >= 2 then break end
+    end
+    return out ~= "" and out or "?"
+end
+
+-- Tiers go top to bottom like a classic talent tree: roots on row 0, each requirement one row deeper.
+local function BuildLayout(skillsTable, availW)
     local parentOf, childrenOf = {}, {}
     for id, info in pairs(skillsTable) do
         local req = info.requirement
@@ -51,7 +67,6 @@ local function BuildLayout(skillsTable)
         end
     end
 
-    -- BFS depth assignment
     local depth, queue = {}, {}
     for id in pairs(skillsTable) do
         if not parentOf[id] then
@@ -71,39 +86,56 @@ local function BuildLayout(skillsTable)
         qi = qi + 1
     end
 
-    -- Group by column, sort for stable layout
-    local cols, maxDepth = {}, 0
+    local rows, maxDepth, maxRow = {}, 0, 1
     for id, d in pairs(depth) do
-        cols[d] = cols[d] or {}
-        table.insert(cols[d], id)
+        rows[d] = rows[d] or {}
+        table.insert(rows[d], id)
         if d > maxDepth then maxDepth = d end
     end
     for d = 0, maxDepth do
-        if cols[d] then table.sort(cols[d]) end
+        if rows[d] then maxRow = math.max(maxRow, #rows[d]) end
     end
 
-    -- Assign pixel positions (top-left of each node)
+    local canvasW = math.max(availW, maxRow * CELL_W + TREE_PAD * 2)
     local positions = {}
-    local cW, cH   = 0, 0
     for d = 0, maxDepth do
-        local col = cols[d] or {}
-        local cx  = TREE_PAD + d * (NODE_W + COL_GAP)
-        for row, id in ipairs(col) do
-            local cy = TREE_PAD + (row - 1) * (NODE_H + ROW_GAP)
-            positions[id] = { x = cx, y = cy }
-            cW = math.max(cW, cx + NODE_W)
-            cH = math.max(cH, cy + NODE_H)
+        local row = rows[d] or {}
+        table.sort(row, function(a, b)
+            local pa = parentOf[a] and positions[parentOf[a]] and positions[parentOf[a]].x or 0
+            local pb = parentOf[b] and positions[parentOf[b]] and positions[parentOf[b]].x or 0
+            if pa ~= pb then return pa < pb end
+            return a < b
+        end)
+        local startX = (canvasW - #row * CELL_W) / 2
+        for i, id in ipairs(row) do
+            positions[id] = {
+                x = math.floor(startX + (i - 1) * CELL_W + (CELL_W - ICON) / 2),
+                y = TREE_TOP + d * ROW_H,
+            }
         end
     end
 
     local connections = {}
-    for id, info in pairs(skillsTable) do
-        if info.requirement and positions[info.requirement] and positions[id] then
-            table.insert(connections, { from = info.requirement, to = id })
-        end
+    for id in pairs(skillsTable) do
+        if parentOf[id] then table.insert(connections, { from = parentOf[id], to = id }) end
     end
 
-    return positions, connections, cW + TREE_PAD, cH + TREE_PAD
+    return positions, connections, canvasW, TREE_TOP + (maxDepth + 1) * ROW_H
+end
+
+local function Bar(x, y, w, h)
+    surface.DrawRect(math.floor(x), math.floor(y), math.max(w, 1), math.max(h, 1))
+end
+
+-- Elbow connector: down from the parent, across, down into the child.
+local function Connector(px, py, cx, cy, col)
+    surface.SetDrawColor(col)
+    local midY = math.floor((py + cy) / 2)
+    Bar(px - 1, py, 2, midY - py)
+    Bar(math.min(px, cx) - 1, midY - 1, math.abs(cx - px) + 2, 2)
+    Bar(cx - 1, midY, 2, cy - midY - 6)
+    draw.NoTexture()
+    surface.DrawPoly({ { x = cx - 5, y = cy - 7 }, { x = cx + 5, y = cy - 7 }, { x = cx, y = cy } })
 end
 
 local function ShowTree(catName, catData, container)
@@ -111,7 +143,7 @@ local function ShowTree(catName, catData, container)
     treeHover = {}
 
     local skills                        = catData.Skills or {}
-    local positions, connections, cW, cH = BuildLayout(skills)
+    local positions, connections, cW, cH = BuildLayout(skills, container:GetWide())
 
     -- Scroll area (leaves room for detail strip)
     local DETAIL_H = 72
@@ -129,36 +161,63 @@ local function ShowTree(catName, catData, container)
     vbar.btnGrip.Paint = function(_, w, h) draw.RoundedBox(3, 1, 1, w - 2, h - 2, Color(55, 55, 70)) end
 
     -- Canvas that holds drawing + invisible node buttons
+    local hasSkills = next(skills) ~= nil
+    local treeCol   = catData.Color or Color(155, 155, 165)
+
+    -- Placeholder silhouette so an empty tree still reads as a tree
+    local ghost, ghostRows = {}, { 1, 3, 2, 1 }
+    if not hasSkills then
+        for r, n in ipairs(ghostRows) do
+            for i = 1, n do
+                table.insert(ghost, { x = (cW - n * CELL_W) / 2 + (i - 1) * CELL_W + (CELL_W - ICON) / 2, y = TREE_TOP + (r - 1) * ROW_H, row = r })
+            end
+        end
+        cH = TREE_TOP + #ghostRows * ROW_H + 10
+    end
+
     local canvas = vgui.Create("DPanel", scroll)
     canvas:SetSize(math.max(cW, scroll:GetWide()), math.max(cH, scroll:GetTall()))
     canvas.Paint = function(self, w, h)
-        draw.RoundedBox(0, 0, 0, w, h, Color(15, 15, 19))
+        draw.RoundedBox(0, 0, 0, w, h, Color(13, 13, 17))
+        -- soft tint under the banner
+        for i = 0, 5 do
+            draw.RoundedBox(0, 0, i * 12, w, 12, Color(treeCol.r, treeCol.g, treeCol.b, 16 - i * 3))
+        end
 
         local pd = LocalPlayer().SkillData or {}
 
-        if not next(skills) then
-            draw.SimpleText("SKILLS COMING SOON", "VTX_Title", w / 2, h / 2, Color(70, 70, 82), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+        -- Banner
+        local spent = 0
+        for id, info in pairs(skills) do spent = spent + (info.price or 1) * ((pd.skills or {})[id] or 0) end
+        draw.SimpleText(string.upper(catName), "VTX_Banner", w / 2, 30, treeCol, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+        local sub = hasSkills and (spent .. " points invested") or "Training programme under development"
+        draw.SimpleText(sub, "VTX_Small", w / 2, 56, Color(110, 110, 124), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+        surface.SetDrawColor(treeCol.r, treeCol.g, treeCol.b, 90)
+        surface.DrawRect(w / 2 - 90, 70, 180, 1)
+
+        if not hasSkills then
+            for _, g in ipairs(ghost) do
+                if g.row < #ghostRows then
+                    surface.SetDrawColor(40, 40, 50, 160)
+                    Bar(g.x + ICON / 2 - 1, g.y + ICON, 2, ROW_H - ICON)
+                end
+                draw.RoundedBox(8, g.x, g.y, ICON, ICON, Color(24, 24, 30, 210))
+                surface.SetDrawColor(44, 44, 54, 220)
+                surface.DrawOutlinedRect(g.x, g.y, ICON, ICON, 2)
+                draw.SimpleText("?", "VTX_Title", g.x + ICON / 2, g.y + ICON / 2, Color(58, 58, 68), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+            end
+            draw.RoundedBox(8, w / 2 - 130, cH / 2 - 26, 260, 52, Color(13, 13, 17, 235))
+            draw.SimpleText("SKILLS COMING SOON", "VTX_Title", w / 2, cH / 2, GOLD, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+            return
         end
 
         -- Connections
         for _, conn in ipairs(connections) do
             local fp, tp = positions[conn.from], positions[conn.to]
             if not fp or not tp then continue end
-            local fromSt  = GetSkillStatus(conn.from, skills[conn.from], pd)
-            local unlocked = (fromSt == "maxed")
-            local col      = unlocked and Color(55, 148, 76, 210) or Color(42, 42, 50, 200)
-            surface.SetDrawColor(col)
-            local x1 = fp.x + NODE_W
-            local y1 = fp.y + NODE_H / 2
-            local x2 = tp.x
-            local y2 = tp.y + NODE_H / 2
-            local mx = math.floor((x1 + x2) / 2)
-            surface.DrawLine(x1, y1, mx, y1)
-            surface.DrawLine(mx, y1, mx, y2)
-            surface.DrawLine(mx, y2, x2, y2)
-            -- Arrow tip
-            surface.DrawLine(x2, y2, x2 - 7, y2 - 4)
-            surface.DrawLine(x2, y2, x2 - 7, y2 + 4)
+            local fromSt = GetSkillStatus(conn.from, skills[conn.from], pd)
+            local col    = (fromSt == "maxed") and Color(235, 190, 70, 230) or Color(52, 52, 62, 230)
+            Connector(fp.x + ICON / 2, fp.y + ICON + LABEL_H, tp.x + ICON / 2, tp.y - 2, col)
         end
 
         -- Nodes
@@ -166,45 +225,30 @@ local function ShowTree(catName, catData, container)
             local info = skills[id]
             if not info then continue end
             local st, cur, max = GetSkillStatus(id, info, pd)
-            local c     = COLS[st]
-            local hov   = treeHover[id]
-            local x, y  = pos.x, pos.y
+            local c   = COLS[st]
+            local hov = treeHover[id]
+            local x, y = pos.x, pos.y
+            local edge = (st == "available") and treeCol or c.edge
 
-            -- Border (1px via slightly larger background box)
-            local ec = c.edge
-            draw.RoundedBox(8, x - 1, y - 1, NODE_W + 2, NODE_H + 2, hov and Color(ec.r, ec.g, ec.b, 255) or Color(ec.r, ec.g, ec.b, 160))
-            -- Shadow
-            draw.RoundedBox(8, x + 2, y + 3, NODE_W, NODE_H, Color(0, 0, 0, 55))
-            -- Background
-            local bg = c.bg
-            draw.RoundedBox(8, x, y, NODE_W, NODE_H, hov and Color(bg.r + 10, bg.g + 10, bg.b + 10) or bg)
-
-            -- Name
-            draw.SimpleText(info.name, "VTX_NodeName", x + NODE_W / 2, y + 14, c.text, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-
-            -- Description (truncated)
-            local descCol = Color(c.text.r, c.text.g, c.text.b, 130)
-            draw.SimpleText(Trunc(info.description, 26), "VTX_Tiny", x + NODE_W / 2, y + 30, descCol, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-
-            -- XP bar
-            local bx, by, bw, bh2 = x + 8, y + NODE_H - 18, NODE_W - 16, 4
-            draw.RoundedBox(2, bx, by, bw, bh2, Color(0, 0, 0, 100))
-            local prog = max > 0 and math.Clamp(cur / max, 0, 1) or 0
-            if prog > 0 then
-                draw.RoundedBox(2, bx, by, math.floor(bw * prog), bh2, c.bar)
+            if st ~= "locked" then
+                draw.RoundedBox(12, x - 6, y - 6, ICON + 12, ICON + 12, Color(edge.r, edge.g, edge.b, hov and 45 or 22))
             end
+            draw.RoundedBox(8, x + 2, y + 3, ICON, ICON, Color(0, 0, 0, 90))
+            draw.RoundedBox(8, x - 2, y - 2, ICON + 4, ICON + 4, Color(edge.r, edge.g, edge.b, hov and 255 or (st == "locked" and 120 or 200)))
+            draw.RoundedBox(6, x, y, ICON, ICON, hov and Color(c.bg.r + 14, c.bg.g + 14, c.bg.b + 14) or c.bg)
 
-            -- Bottom-left: level
-            local lvlStr = st == "locked" and "LOCKED" or ("Lv " .. cur .. "/" .. max)
-            local lvlCol = st == "locked" and Color(58, 58, 64) or Color(c.bar.r, c.bar.g, c.bar.b, 200)
-            draw.SimpleText(lvlStr, "VTX_Tiny", x + 7, y + NODE_H - 28, lvlCol, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+            draw.SimpleText(Initials(info.name), "VTX_Title", x + ICON / 2, y + ICON / 2 - 1, st == "locked" and Color(62, 62, 70) or c.text, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 
-            -- Top-right: cost or MAX badge
-            if st == "maxed" then
-                draw.SimpleText("MAX", "VTX_Tiny", x + NODE_W - 6, y + 6, Color(65, 185, 85, 220), TEXT_ALIGN_RIGHT, TEXT_ALIGN_TOP)
-            else
-                draw.SimpleText((info.price or 1) .. "pt", "VTX_Tiny", x + NODE_W - 6, y + 6, Color(95, 95, 108), TEXT_ALIGN_RIGHT, TEXT_ALIGN_TOP)
-            end
+            -- Rank badge (bottom-right, WoW style)
+            local rk = cur .. "/" .. max
+            surface.SetFont("VTX_Rank")
+            local tw = surface.GetTextSize(rk)
+            local bw = tw + 8
+            draw.RoundedBox(4, x + ICON - bw + 3, y + ICON - 12, bw, 16, Color(8, 8, 10, 240))
+            draw.SimpleText(rk, "VTX_Rank", x + ICON - bw / 2 + 3, y + ICON - 4, st == "maxed" and GOLD or (st == "locked" and Color(80, 80, 88) or Color(110, 235, 130)), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+
+            -- Name label
+            draw.SimpleText(Trunc(info.name, 20), "VTX_Tiny", x + ICON / 2, y + ICON + 12, st == "locked" and Color(70, 70, 78) or Color(185, 185, 198), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
         end
     end
 
@@ -215,7 +259,7 @@ local function ShowTree(catName, catData, container)
 
         local btn = vgui.Create("DButton", canvas)
         btn:SetPos(pos.x, pos.y)
-        btn:SetSize(NODE_W, NODE_H)
+        btn:SetSize(ICON, ICON)
         btn:SetText("")
         btn.Paint = function() end
 
@@ -397,7 +441,7 @@ function OpenSkillMenu()
     -- Category scroll list in sidebar
     local catScroll = vgui.Create("DScrollPanel", sidebar)
     catScroll:SetPos(0, 8)
-    catScroll:SetSize(SIDEBAR_W, H - HEADER_H - 88)
+    catScroll:SetSize(SIDEBAR_W, H - HEADER_H - 126)
     catScroll:GetVBar():SetWide(3)
 
     local catList = vgui.Create("DIconLayout", catScroll)
@@ -439,6 +483,7 @@ function OpenSkillMenu()
                 if id == myID then access = true break end
             end
         end
+        if lp:IsSuperAdmin() then access = true end -- admins can preview every tree
         if not access then continue end
 
         local treeCol = catData.Color or Color(155, 155, 165)
@@ -467,7 +512,7 @@ function OpenSkillMenu()
 
     -- Reset button
     local resetBtn = vgui.Create("DButton", sidebar)
-    resetBtn:SetPos(10, H - HEADER_H - 80)
+    resetBtn:SetPos(10, H - HEADER_H - 112)
     resetBtn:SetSize(SIDEBAR_W - 20, 26)
     resetBtn:SetText("")
     resetBtn.Paint = function(self, w, h)
