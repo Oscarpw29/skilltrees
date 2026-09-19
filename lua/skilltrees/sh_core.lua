@@ -31,12 +31,62 @@ SkillTrees.Config = {}
 SkillTrees.MaxLevel = 15
 
 SkillTrees.Tree = {
-    -- Unit trees ship empty; skills are added in later updates. MRSGroup must match the player's MRS group exactly.
+    -- Unit trees are small for now; more skills arrive in later updates. MRSGroup must match the player's MRS group exactly.
     -- Specializations unlock at unlockLevel and show COMING SOON until comingSoon is removed.
     ["212th"] = {
         Color = Color(255, 140, 0),
         MRSGroup = {"212th Attack"},
-        Skills = {},
+        Skills = {
+            ["212th_hp_1"] = {
+                name = "Frontline Conditioning",
+                description = "Increase health by 10 per level",
+                price = 1,
+                maxLevel = 3,
+                requirement = nil,
+            },
+            ["212th_hpregen"] = {
+                name = "Battle Recovery",
+                description = "Regenerate 2 health every 2 seconds out of combat",
+                price = 1,
+                maxLevel = 2,
+                requirement = "212th_hp_1",
+            },
+            ["212th_hp_2"] = {
+                name = "Veteran's Body",
+                description = "Increase health by 10 and armor by 5 per level",
+                price = 1,
+                maxLevel = 2,
+                requirement = "212th_hp_1",
+            },
+            ["212th_res"] = {
+                name = "Unbreakable",
+                description = "Reduce damage taken by 1% per level",
+                price = 2,
+                maxLevel = 3,
+                requirement = "212th_hpregen",
+            },
+            ["212th_firerate"] = {
+                name = "Squad Suppression",
+                description = "Increase fire rate by 5% per level",
+                price = 1,
+                maxLevel = 2,
+                requirement = nil,
+            },
+            ["212th_damage"] = {
+                name = "Frontline Aggression",
+                description = "Increase bullet damage by 5% per level",
+                price = 2,
+                maxLevel = 3,
+                requirement = "212th_firerate",
+            },
+            ["212th_salary"] = {
+                name = "Combat Pay",
+                description = "Increase salary by 5% per level",
+                price = 1,
+                maxLevel = 3,
+                requirement = nil,
+            },
+        },
         Specializations = {
             ["Scout"] = {
                 name = "Scout",
@@ -57,7 +107,57 @@ SkillTrees.Tree = {
     ["104th"] = {
         Color = Color(150, 60, 60),
         MRSGroup = {"104th Mechanized"},
-        Skills = {},
+        Skills = {
+            ["104th_speed_1"] = {
+                name = "Pack Hunter",
+                description = "Increase move speed by 2% per level",
+                price = 1,
+                maxLevel = 3,
+                requirement = nil,
+            },
+            ["104th_speed_2"] = {
+                name = "Relentless Pursuit",
+                description = "Increase move speed by a further 2% per level",
+                price = 2,
+                maxLevel = 2,
+                requirement = "104th_speed_1",
+            },
+            ["104th_reload"] = {
+                name = "Quick Hands",
+                description = "Increase reload speed by 5% per level",
+                price = 1,
+                maxLevel = 3,
+                requirement = nil,
+            },
+            ["104th_damage"] = {
+                name = "Wolf's Precision",
+                description = "Increase bullet damage by 5% per level",
+                price = 2,
+                maxLevel = 3,
+                requirement = "104th_reload",
+            },
+            ["104th_hp"] = {
+                name = "Hardened Pack",
+                description = "Increase health by 5 per level",
+                price = 1,
+                maxLevel = 3,
+                requirement = nil,
+            },
+            ["104th_armor"] = {
+                name = "Pack Armor",
+                description = "Increase armor by 5 per level",
+                price = 1,
+                maxLevel = 3,
+                requirement = "104th_hp",
+            },
+            ["104th_xp"] = {
+                name = "Wolfpack Training",
+                description = "Gain 10% more XP",
+                price = 2,
+                maxLevel = 1,
+                requirement = nil,
+            },
+        },
         Specializations = {
             ["Scout"] = {
                 name = "Scout",
@@ -78,7 +178,57 @@ SkillTrees.Tree = {
     ["Shock"] = {
         Color = Color(0, 210, 255),
         MRSGroup = {"Shock"},
-        Skills = {},
+        Skills = {
+            ["shock_armor_1"] = {
+                name = "Riot Plating",
+                description = "Increase armor by 5 per level",
+                price = 1,
+                maxLevel = 3,
+                requirement = nil,
+            },
+            ["shock_armorregen"] = {
+                name = "Reinforced Gear",
+                description = "Regenerate 1 armor every 2 seconds out of combat",
+                price = 1,
+                maxLevel = 2,
+                requirement = "shock_armor_1",
+            },
+            ["shock_res"] = {
+                name = "Riot Conditioning",
+                description = "Reduce damage taken by 1% per level",
+                price = 2,
+                maxLevel = 3,
+                requirement = "shock_armorregen",
+            },
+            ["shock_hp"] = {
+                name = "Determination",
+                description = "Increase health by 8 and armor by 4 per level",
+                price = 1,
+                maxLevel = 3,
+                requirement = nil,
+            },
+            ["shock_hpregen"] = {
+                name = "Second Wind",
+                description = "Regenerate 2 health every 2 seconds out of combat",
+                price = 1,
+                maxLevel = 2,
+                requirement = "shock_hp",
+            },
+            ["shock_damage"] = {
+                name = "Enforcement Firepower",
+                description = "Increase bullet damage by 3% per level",
+                price = 1,
+                maxLevel = 3,
+                requirement = nil,
+            },
+            ["shock_firerate"] = {
+                name = "Suppressive Fire",
+                description = "Increase fire rate by 5% per level",
+                price = 2,
+                maxLevel = 2,
+                requirement = "shock_damage",
+            },
+        },
         Specializations = {
             ["Scout"] = {
                 name = "Scout",
@@ -114,6 +264,27 @@ SkillTrees.Tree = {
 }
 
 SkillTrees.Buffs = {
+    ["212th_hp_1"] = { hp = 10 },
+    ["212th_hpregen"] = { hpregen = 2 },
+    ["212th_hp_2"] = { hp = 10, armor = 5 },
+    ["212th_res"] = { resistance = 0.01 },
+    ["212th_firerate"] = { firerate = 0.05 },
+    ["212th_damage"] = { damage = 0.05 },
+    ["212th_salary"] = { salary_bonus = 0.05 },
+    ["104th_speed_1"] = { movespeed = 0.02 },
+    ["104th_speed_2"] = { movespeed = 0.02 },
+    ["104th_reload"] = { reloadspeed = 0.05 },
+    ["104th_damage"] = { damage = 0.05 },
+    ["104th_hp"] = { hp = 5 },
+    ["104th_armor"] = { armor = 5 },
+    ["104th_xp"] = { xp_boost = 0.1 },
+    ["shock_armor_1"] = { armor = 5 },
+    ["shock_armorregen"] = { armorregen = 1 },
+    ["shock_res"] = { resistance = 0.01 },
+    ["shock_hp"] = { hp = 8, armor = 4 },
+    ["shock_hpregen"] = { hpregen = 2 },
+    ["shock_damage"] = { damage = 0.03 },
+    ["shock_firerate"] = { firerate = 0.05 },
 }
 
 SkillTrees.RankMultipliers = {
