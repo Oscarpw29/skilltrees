@@ -54,6 +54,9 @@ Skill fields
     maxLevel         (default 1)
     row, col         grid position (row 1..TREE_ROWS, col 1..TREE_COLS)
     requirement      skill id that must be at its max level first (drawn as a connector)
+    minLevel         player level needed before the skill can be learned
+    unlocks          ArcCW attachment ids this skill unlocks. An attachment listed on any skill
+                     is locked until the player owns one of those skills; unlisted ones are free.
     allowedJobs      optional list of job names
     allowedSteamIDs  optional list of SteamIDs
     buffs            per-level stat bonuses, see SkillTrees.StatLabels in sh_core.lua for the keys
@@ -113,6 +116,15 @@ SkillTrees.Tree = {
                 price = 2, maxLevel = 3,
                 requirement = "212th_hpregen",
                 buffs = { resistance = 0.01 },
+            },
+            ["212th_capstone"] = {
+                row = 3, col = 3,
+                name = "Ghost Company Veteran",
+                description = "Capstone. Unlocks the Veteran Training weapon perk: faster reloads and steadier recoil.",
+                price = 2, maxLevel = 1,
+                minLevel = 15,
+                icon = "icon16/medal_gold_1.png",
+                unlocks = { "perk_veteran_training" },
             },
             ["212th_firerate"] = {
                 row = 1, col = 3,
@@ -197,6 +209,15 @@ SkillTrees.Tree = {
                 price = 2, maxLevel = 1,
                 buffs = { xp_boost = 0.1 },
             },
+            ["104th_capstone"] = {
+                row = 3, col = 3,
+                name = "Alpha of the Pack",
+                description = "Capstone. Unlocks the Quickdraw Training weapon perk: faster draw and movement.",
+                price = 2, maxLevel = 1,
+                minLevel = 15,
+                icon = "icon16/medal_gold_1.png",
+                unlocks = { "perk_quickdraw_training" },
+            },
         },
         Specializations = SPECS,
     },
@@ -228,6 +249,15 @@ SkillTrees.Tree = {
                 price = 2, maxLevel = 3,
                 requirement = "shock_armorregen",
                 buffs = { resistance = 0.01 },
+            },
+            ["shock_capstone"] = {
+                row = 3, col = 2,
+                name = "Enforcer Marksmanship",
+                description = "Capstone. Unlocks the Marksman Training weapon perk: faster, tighter aim down sights.",
+                price = 2, maxLevel = 1,
+                minLevel = 15,
+                icon = "icon16/medal_gold_1.png",
+                unlocks = { "perk_marksman_training" },
             },
             ["shock_hp"] = {
                 row = 1, col = 2,
@@ -264,8 +294,7 @@ SkillTrees.Tree = {
     },
 
     -- Universal single-unlock tree (no access fields = open to every job).
-    -- Gates the Clone Wars 2003 pack's Energization/Perk/Internal Mod attachments;
-    -- see that pack's att.Hook_Compatible checks against "adv_munitions".
+    -- Gates the Clone Wars 2003 pack's Energization and Internal Mod attachments via `unlocks`.
     ["Ordnance"] = {
         Order = 4,
         Color = Color(200, 160, 40),
@@ -273,9 +302,13 @@ SkillTrees.Tree = {
             ["adv_munitions"] = {
                 row = 1, col = 2,
                 name = "Advanced Munitions Training",
-                description = "Unlocks access to specialized Energization cells, combat perks, and internal weapon modifications.",
+                description = "Unlocks specialized Energization cells and internal weapon modifications.",
                 price = 4, maxLevel = 1,
                 icon = "icon16/bullet_star.png",
+                unlocks = {
+                    "ammo_highoutput", "ammo_rapidcycle", "ammo_stabilized",
+                    "mod_cooling_vents", "mod_lightweight_internals", "mod_reinforced_barrel",
+                },
             },
         },
     },

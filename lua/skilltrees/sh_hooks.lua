@@ -1,10 +1,16 @@
 -- Weapon stat hooks. Shared so client prediction and the server agree.
 
--- ArcCW caches computed stats (RPM etc.), so buff changes only show up once the cache is cleared
+-- ArcCW caches computed stats (RPM etc.), so buff changes only show up once the cache is cleared.
+-- On the server AdjustAtts also detaches attachments the player no longer unlocks (after a respec).
 function SkillTrees:RefreshWeapons(ply)
     if not IsValid(ply) then return end
     for _, wep in ipairs(ply:GetWeapons()) do
-        if wep.ArcCW and wep.RecalcAllBuffs then wep:RecalcAllBuffs() end
+        if not wep.ArcCW then continue end
+        if SERVER and wep.AdjustAtts then
+            wep:AdjustAtts()
+        elseif wep.RecalcAllBuffs then
+            wep:RecalcAllBuffs()
+        end
     end
 end
 

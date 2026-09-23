@@ -56,6 +56,11 @@ function TIP:Rebuild()
         if cur < max then add("Next rank: " .. effectText(info, cur + 1), "VTX_Small", UI.Col.staged, cur > 0 and 2 or 8) end
     end
 
+    for i, att in ipairs(info.unlocks or {}) do
+        local atttbl = ArcCW and ArcCW.AttachmentTable and ArcCW.AttachmentTable[att]
+        add("Unlocks attachment: " .. (atttbl and atttbl.PrintName or att), "VTX_Small", UI.Col.gold, i == 1 and 8 or 2)
+    end
+
     local price = info.price or 1
     add("Cost: " .. price .. " point" .. (price == 1 and "" or "s") .. " per rank", "VTX_Small", UI.Col.textDim, 8)
 

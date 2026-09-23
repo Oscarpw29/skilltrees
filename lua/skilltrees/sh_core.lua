@@ -25,15 +25,20 @@ SkillTrees.StatLabels = {
 }
 
 function SkillTrees:BuildIndex()
-    self.SkillIndex = {}
-    self.Buffs      = {} -- id -> buffs, kept for anything outside the addon that still reads it
-    self.TreeOrder  = {}
+    self.SkillIndex       = {}
+    self.Buffs            = {} -- id -> buffs, kept for anything outside the addon that still reads it
+    self.TreeOrder        = {}
+    self.AttachmentLocks  = {} -- attachment id -> { skill ids that unlock it }
 
     for treeName, tree in pairs(self.Tree or {}) do
         table.insert(self.TreeOrder, treeName)
         for id, info in pairs(tree.Skills or {}) do
             self.SkillIndex[id] = { info = info, tree = treeName }
             self.Buffs[id] = info.buffs
+            for _, att in ipairs(info.unlocks or {}) do
+                self.AttachmentLocks[att] = self.AttachmentLocks[att] or {}
+                table.insert(self.AttachmentLocks[att], id)
+            end
         end
     end
 
@@ -125,9 +130,14 @@ function SkillTrees:SpentBelowRow(skills, treeName, row)
 end
 
 -- Is the skill's row open and its requirement maxed? Returns ok, reason.
-function SkillTrees:IsUnlocked(skills, skillID)
+-- `level` is optional; when given, the skill's minLevel is checked too.
+function SkillTrees:IsUnlocked(skills, skillID, level)
     local info, treeName = self:GetSkill(skillID)
     if not info then return false, "Unknown skill." end
+
+    if level and info.minLevel and level < info.minLevel then
+        return false, "Requires level " .. info.minLevel .. "."
+    end
 
     local row = info.row or 1
     local need = self:GetRowGate(row) - self:SpentBelowRow(skills, treeName, row)
@@ -146,7 +156,7 @@ function SkillTrees:IsUnlocked(skills, skillID)
 end
 
 -- "locked" | "available" | "partial" | "maxed", current level, max level
-function SkillTrees:GetSkillStatus(skills, skillID)
+function SkillTrees:GetSkillStatus(skills, skillID, level)
     local info = self:GetSkill(skillID)
     if not info then return "locked", 0, 1 end
 
@@ -155,7 +165,7 @@ function SkillTrees:GetSkillStatus(skills, skillID)
     local max = info.maxLevel or 1
 
     if cur >= max then return "maxed", cur, max end
-    if not self:IsUnlocked(skills, skillID) then return "locked", cur, max end
+    if not self:IsUnlocked(skills, skillID, level) then return "locked", cur, max end
     if cur > 0 then return "partial", cur, max end
     return "available", cur, max
 end
@@ -179,7 +189,7 @@ function SkillTrees:CanAddLevel(ply, skills, points, skillID)
         return false, "Already at max rank."
     end
 
-    local ok, reason = self:IsUnlocked(skills, skillID)
+    local ok, reason = self:IsUnlocked(skills, skillID, ply.SkillData and ply.SkillData.level or 1)
     if not ok then return false, reason end
 
     local cost = info.price or 1
@@ -248,6 +258,26 @@ function SkillTrees:CanPurchase(ply, skillID)
     local data = ply.SkillData
     if not data or not data.skills then return false, "Your skill data is still loading." end
     return self:CanAddLevel(ply, data.skills, data.points or 0, skillID)
+end
+
+-- Attachments
+
+-- Can `ply` use an ArcCW attachment? Attachments no skill `unlocks` are always allowed.
+-- Called from each locked attachment's Hook_Compatible on both realms.
+function SkillTrees:CanUseAttachment(ply, attID)
+    local lockedBy = self.AttachmentLocks[attID]
+    if not lockedBy then return true end
+    if not IsValid(ply) or not ply:IsPlayer() then return false end
+
+    -- Clients only receive their own skill data; don't hide other players' attachments
+    if CLIENT and ply ~= LocalPlayer() then return true end
+
+    local skills = ply.SkillData and ply.SkillData.skills
+    if not skills then return false end
+    for _, id in ipairs(lockedBy) do
+        if (skills[id] or 0) > 0 then return true end
+    end
+    return false
 end
 
 -- Points spent in a tree and the most it can take

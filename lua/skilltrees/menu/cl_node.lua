@@ -27,7 +27,8 @@ end
 
 function NODE:GetState()
     local skills = self.Menu:GetSkills()
-    local status, cur, max = SkillTrees:GetSkillStatus(skills, self.SkillID)
+    local level = (LocalPlayer().SkillData or {}).level or 1
+    local status, cur, max = SkillTrees:GetSkillStatus(skills, self.SkillID, level)
     local saved = self.Menu:GetSaved()[self.SkillID] or 0
     local canAdd = self.Interactive and SkillTrees:CanAddLevel(LocalPlayer(), skills, self.Menu:GetPoints(), self.SkillID)
     return status, cur, max, cur - saved, canAdd
