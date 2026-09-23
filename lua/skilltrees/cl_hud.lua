@@ -1,43 +1,34 @@
--- Ensure these are initialized to 0, not nil
-local xpAlpha = xpAlpha or 0
-local lastXP = lastXP or -1
-local xpStayTime = 0 
+-- Small XP bar that fades in at the top of the screen whenever XP changes
+
+local alpha, lastXP, lastLevel, stayUntil = 0, nil, nil, 0
 
 hook.Add("HUDPaint", "Vortex_XP_HUD", function()
     local lp = LocalPlayer()
-    if not IsValid(lp) or not lp.SkillData then return end
+    local sd = IsValid(lp) and lp.SkillData
+    if not sd then return end
 
-    local sd = lp.SkillData
-    local curXP = sd.xp or 0
-    local curLvl = sd.level or 1
-    local reqXP = math.floor(100 * math.pow(curLvl, 1.5))
-
-    -- Safety: If reqXP is 0 (to avoid division by zero error)
-    if reqXP <= 0 then reqXP = 100 end
-
-    if lastXP != -1 and lastXP != curXP then
-        xpAlpha = 255
-        xpStayTime = CurTime() + 3 
+    local xp, level = sd.xp or 0, sd.level or 1
+    if lastXP and (lastXP ~= xp or lastLevel ~= level) then
+        alpha = 255
+        stayUntil = CurTime() + 3
     end
-    lastXP = curXP
+    lastXP, lastLevel = xp, level
 
-    if xpAlpha > 0 then
-        if CurTime() > xpStayTime then
-            xpAlpha = Lerp(FrameTime() * 2, xpAlpha, 0)
-        end
-        
-        -- The Fix: Ensure xpAlpha is treated as a number here
-        local displayAlpha = math.Clamp(tonumber(xpAlpha) or 0, 0, 255)
-
-        local w, h = 300, 20
-        local x, y = (ScrW() / 2) - (w / 2), 50 
-
-        -- Background
-        draw.RoundedBox(4, x, y, w, h, Color(20, 20, 20, displayAlpha * 0.8))
-        
-        local progress = math.Clamp(curXP / reqXP, 0, 1)
-        draw.RoundedBox(4, x + 2, y + 2, (w - 4) * progress, h - 4, Color(155, 89, 182, displayAlpha))
-
-        draw.SimpleText(curLvl >= SkillTrees.MaxLevel and ("LEVEL " .. curLvl .. " - MAX") or ("LEVEL " .. curLvl .. " - " .. curXP .. "/" .. reqXP .. " XP"), "DermaDefaultBold", x + (w/2), y + (h/2), Color(255, 255, 255, displayAlpha), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+    if alpha <= 1 then return end
+    if CurTime() > stayUntil then
+        alpha = Lerp(FrameTime() * 2, alpha, 0)
     end
+
+    local maxed    = level >= SkillTrees.MaxLevel
+    local required = SkillTrees:GetRequiredXP(level)
+    local progress = maxed and 1 or math.Clamp(xp / required, 0, 1)
+
+    local w, h = 300, 20
+    local x, y = ScrW() / 2 - w / 2, 50
+
+    draw.RoundedBox(4, x, y, w, h, Color(20, 20, 20, alpha * 0.8))
+    draw.RoundedBox(4, x + 2, y + 2, (w - 4) * progress, h - 4, Color(155, 89, 182, alpha))
+
+    local text = maxed and ("LEVEL " .. level .. " - MAX") or ("LEVEL " .. level .. " - " .. xp .. "/" .. required .. " XP")
+    draw.SimpleText(text, "DermaDefaultBold", x + w / 2, y + h / 2, Color(255, 255, 255, alpha), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 end)

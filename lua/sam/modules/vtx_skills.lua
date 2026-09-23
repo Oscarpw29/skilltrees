@@ -4,145 +4,85 @@ local sam, command = sam, sam.command
 
 command.set_category("Vortex Skills")
 
--- COMMAND: Give XP
 command.new("givexp")
     :SetPermission("givexp", "superadmin")
     :AddArg("player")
-    :AddArg("number", {hint = "amount", min = 1, round = true})
-    :Help("Give XP to a player.")
-
+    :AddArg("number", { hint = "amount", min = 1, round = true })
+    :Help("Give XP to a player. Levels up as normal; ignores XP multipliers.")
     :OnExecute(function(ply, targets, amount)
-        for i = 1, #targets do
-            local target = targets[i]
-            if target.SkillData then
-                target.SkillData.xp = (target.SkillData.xp or 0) + amount
-                
-                -- Ensure SkillTrees global exists
-                if SkillTrees and SkillTrees.SaveAndSync then
-                    SkillTrees:SaveAndSync(target)
-                end
-            end
+        for _, target in ipairs(targets) do
+            SkillTrees:AddXP(target, amount, true)
         end
-
-        -- SAM color-coded message
-        sam.player.send_message(nil, "{A} gave {V} XP to {T}.", {
-            A = ply, T = targets, V = amount
-        })
+        sam.player.send_message(nil, "{A} gave {V} XP to {T}.", { A = ply, T = targets, V = amount })
     end)
 :End()
 
-command.new("vtx_givepts", "superadmin")
+command.new("vtx_givepts")
     :SetPermission("vtx_givepts", "superadmin")
     :AddArg("player")
-    :AddArg("number", {hint = 'amount', min=1, round=true})
-    :Help("Give points to a player.")
-
+    :AddArg("number", { hint = "amount", min = 1, round = true })
+    :Help("Give skill points to a player.")
     :OnExecute(function(ply, targets, amount)
-    for i = 1, #targets do
-        local target = targets[i]
-        if target.SkillData then
-            target.SkillData.points = (target.SkillData.points or 0) + amount
-            if SkillTrees and SkillTrees.SaveAndSync then
+        for _, target in ipairs(targets) do
+            if target.SkillData and target.SkillDataLoaded then
+                target.SkillData.points = target.SkillData.points + amount
                 SkillTrees:SaveAndSync(target)
             end
         end
-    end
-    sam.player.send_message(nil, "{A} gave {V} points to {T}.",{
-        A = ply, T = targets, V = amount
-    })
-end)
+        sam.player.send_message(nil, "{A} gave {V} points to {T}.", { A = ply, T = targets, V = amount })
+    end)
 :End()
 
--- COMMAND: Give Levels (+ optional explicit points)
 command.new("vtx_givelevels")
     :SetPermission("vtx_givelevels", "superadmin")
     :AddArg("player")
-    :AddArg("number", {hint = "levels", min = 1, round = true})
-    :AddArg("number", {hint = "points (0 = auto)", min = 0, round = true})
-    :Help("Give levels and skill points to a player. Set points to 0 to auto-award at the normal rate (1 per 2 levels).")
-
+    :AddArg("number", { hint = "levels", min = 1, round = true })
+    :AddArg("number", { hint = "points (0 = auto)", min = 0, round = true })
+    :Help("Give levels to a player. Points = 0 awards skill points at the normal rate.")
     :OnExecute(function(ply, targets, amount, bonusPoints)
-        for i = 1, #targets do
-            local target = targets[i]
-            if target.SkillData then
-                local oldLevel = target.SkillData.level or 1
-                local newLevel = math.min(oldLevel + amount, SkillTrees.MaxLevel)
-                if newLevel <= oldLevel then continue end
-
-                local pointsEarned
-                if bonusPoints and bonusPoints > 0 then
-                    pointsEarned = bonusPoints
-                else
-                    -- Auto: award at normal level-up rate (1 point every 2 levels)
-                    pointsEarned = math.floor(newLevel / 2) - math.floor(oldLevel / 2)
-                end
-
-                target.SkillData.level = newLevel
-                target.SkillData.points = (target.SkillData.points or 0) + pointsEarned
-
-                if SkillTrees and SkillTrees.SaveAndSync then
-                    SkillTrees:SaveAndSync(target)
-                end
-
-                target:ChatPrint("[VORTEX] An admin gave you " .. (newLevel - oldLevel) .. " levels! You are now level " .. newLevel .. ".")
-                if pointsEarned > 0 then
-                    target:ChatPrint("[VORTEX] You earned " .. pointsEarned .. " skill point(s)!")
+        for _, target in ipairs(targets) do
+            local gained, points = SkillTrees:AddLevels(target, amount, bonusPoints > 0 and bonusPoints or nil)
+            if gained > 0 then
+                target:ChatPrint("[VORTEX] An admin gave you " .. gained .. " level(s)! You are now level " .. target.SkillData.level .. ".")
+                if points > 0 then
+                    target:ChatPrint("[VORTEX] You earned " .. points .. " skill point(s)!")
                 end
             end
         end
-
-        sam.player.send_message(nil, "{A} gave {V} levels to {T}.", {
-            A = ply, T = targets, V = amount
-        })
+        sam.player.send_message(nil, "{A} gave {V} levels to {T}.", { A = ply, T = targets, V = amount })
     end)
 :End()
 
--- COMMAND: Reset Skills
 command.new("resetskills")
     :SetPermission("resetskills", "superadmin")
     :AddArg("player")
-    :Help("Completely reset a player's skill progress.")
-
+    :Help("Completely reset a player's skill progress (level, XP, points and skills).")
     :OnExecute(function(ply, targets)
-        for i = 1, #targets do
-            local target = targets[i]
-            target.SkillData = {
-                xp = 0,
-                level = 1,
-                points = 0,
-                skills = {}
-            }
-
-            if SkillTrees and SkillTrees.SaveAndSync then
+        for _, target in ipairs(targets) do
+            if target.SkillDataLoaded then
+                target.SkillData = { xp = 0, level = 1, points = 0, skills = {}, version = target.SkillData.version }
                 SkillTrees:SaveAndSync(target)
+                SkillTrees:ApplyBuffs(target)
             end
         end
-
-        sam.player.send_message(nil, "{A} reset the skill profile of {T}.", {
-            A = ply, T = targets
-        })
+        sam.player.send_message(nil, "{A} reset the skill profile of {T}.", { A = ply, T = targets })
     end)
 :End()
 
 command.new("vortex_savestations")
     :SetPermission("vortex_savestations", "superadmin")
-    :Help("Save all stations on the map")
+    :Help("Save all skill stations on the map.")
     :OnExecute(function(ply)
-        hook.Run("Vortex_SaveStations")
-        sam.player.send_message(nil, "{A} saved all skill stations",{
-            A = ply
-        })
+        SkillTrees:SaveStations()
+        sam.player.send_message(nil, "{A} saved all skill stations.", { A = ply })
     end)
 :End()
 
 command.new("vortex_clearstations")
     :SetPermission("vortex_clearstations", "superadmin")
-    :Help("Clears all stations on the current map.")
+    :Help("Clear all skill stations on the current map.")
     :OnExecute(function(ply)
-        hook.Run("Vortex_SaveStations")
-        
-        sam.player.send_message(nil, "{A} cleared all skill stations",{
-            A = ply
-        })
+        SkillTrees:ClearStations()
+        sam.player.send_message(nil, "{A} cleared all skill stations.", { A = ply })
     end)
 :End()

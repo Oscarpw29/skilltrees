@@ -1,28 +1,38 @@
-if SERVER then
-    -- 1. Tell the client to download these files from the server
-    AddCSLuaFile("skilltrees/sh_core.lua")
-    AddCSLuaFile("skilltrees/sh_hooks.lua")
-    AddCSLuaFile("skilltrees/cl_menu.lua")
-    AddCSLuaFile("skilltrees/cl_hud.lua")
-    AddCSLuaFile("autorun/client/cl_vortex_util.lua")
-    AddCSLuaFile("autorun/client/cl_init.lua")
+-- Load order matters: config -> core -> everything else. Prefix decides the realm.
+local FILES = {
+    "sh_config.lua",
+    "sh_core.lua",
+    "sh_hooks.lua",
 
-    -- 2. Load the server-side files
-    include("skilltrees/sh_core.lua")
-    include("skilltrees/sh_hooks.lua")
-    include("skilltrees/sv_data.lua")
-    include("skilltrees/sv_skills.lua")
-    include("skilltrees/sv_persistence.lua")
-    include("skilltrees/sv_xp.lua")
-    include("autorun/client/cl_init.lua")
-end
+    "sv_net.lua",
+    "sv_data.lua",
+    "sv_skills.lua",
+    "sv_effects.lua",
+    "sv_xp.lua",
+    "sv_stations.lua",
 
-if CLIENT then
-    -- 3. The client now loads the files the server told it to download
-    include("skilltrees/sh_core.lua")
-    include("skilltrees/cl_menu.lua")
-    include("skilltrees/cl_hud.lua")
-    include("autorun/client/cl_vortex_util.lua")
-    include("skilltrees/sh_hooks.lua")
-    include("autorun/client/cl_init.lua")
+    "cl_net.lua",
+    "cl_hud.lua",
+    "cl_admin.lua",
+
+    "menu/cl_theme.lua",
+    "menu/cl_node.lua",
+    "menu/cl_tree.lua",
+    "menu/cl_tooltip.lua",
+    "menu/cl_frame.lua",
+    "menu/cl_menu.lua",
+}
+
+for _, name in ipairs(FILES) do
+    local path = "skilltrees/" .. name
+    local realm = string.GetFileFromFilename(name):sub(1, 3)
+
+    if realm == "sv_" then
+        if SERVER then include(path) end
+    elseif realm == "cl_" then
+        if SERVER then AddCSLuaFile(path) else include(path) end
+    else
+        if SERVER then AddCSLuaFile(path) end
+        include(path)
+    end
 end
