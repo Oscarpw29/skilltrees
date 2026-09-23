@@ -30,6 +30,28 @@ local function migrate(ply, data)
     data.version = DATA_VERSION
 end
 
+-- Refund skills listed in SkillTrees.RetiredSkills (removed from the trees). Runs on every
+-- load; a refunded skill is removed from the data, so it can't be refunded twice.
+local function refundRetired(ply, data)
+    local refund, reasons = 0, {}
+    for id, retired in pairs(SkillTrees.RetiredSkills or {}) do
+        local level = tonumber(data.skills[id])
+        if level and level > 0 and not SkillTrees:GetSkill(id) then
+            refund = refund + (retired.price or 1) * level
+            if retired.reason then table.insert(reasons, retired.reason) end
+        end
+        if not SkillTrees:GetSkill(id) then data.skills[id] = nil end
+    end
+    if refund <= 0 then return end
+
+    data.points = data.points + refund
+    timer.Simple(6, function()
+        if not IsValid(ply) then return end
+        for _, reason in ipairs(reasons) do ply:ChatPrint("[VORTEX] " .. reason .. ".") end
+        ply:ChatPrint("[VORTEX] Refunded " .. refund .. " skill point(s).")
+    end)
+end
+
 local function normalise(data)
     data = istable(data) and data or {}
     data.xp     = tonumber(data.xp) or 0
@@ -69,6 +91,8 @@ hook.Add("PlayerInitialSpawn", "SkillTrees_Load", function(ply)
             local decoded = util.JSONToTable(raw)
             if decoded then
                 ply.SkillData = normalise(decoded)
+                -- Before migrate: its refund can't price skills that no longer exist
+                refundRetired(ply, ply.SkillData)
                 migrate(ply, ply.SkillData)
             end
         end

@@ -45,6 +45,8 @@ Tree fields
         Teams        { TEAM_X, "Job Name" }
         Ranks        { "superadmin" }     user groups
         SteamIDs     { "STEAM_0:1:..." }
+    Attachments      ArcCW attachment ids every member of this unit can use (e.g. its scopes).
+                     Like skill `unlocks`, listing an attachment here locks it for everyone else.
     Skills           { [id] = skill }
     Specializations  { [name] = { name, description, unlockLevel, comingSoon, Skills } }
 
@@ -71,9 +73,9 @@ local SPECS = {
         comingSoon = true,
         Skills = {},
     },
-    ["Field Medic"] = {
-        name = "Field Medic",
-        description = "Increases move speed and support utility.",
+    ["Frontline"] = {
+        name = "Frontline",
+        description = "Close-quarters assault training and suppressive firepower.",
         unlockLevel = 15,
         comingSoon = true,
         Skills = {},
@@ -85,6 +87,7 @@ SkillTrees.Tree = {
         Order = 1,
         Color = Color(255, 140, 0),
         MRSGroup = { "212th Attack" },
+        Attachments = { "fml_mw2r_optic_holo", "fml_mw_optic_viper", "fml_mw_optic_mag_holo", "fml_mw2r_optic_acog" }, -- unit scopes
         Skills = {
             ["212th_hp_1"] = {
                 row = 1, col = 1,
@@ -120,11 +123,11 @@ SkillTrees.Tree = {
             ["212th_capstone"] = {
                 row = 3, col = 3,
                 name = "Ghost Company Veteran",
-                description = "Capstone. Unlocks the Veteran Training weapon perk: faster reloads and steadier recoil.",
+                description = "Capstone. Unlocks a specialised Energization cell, internal modification and training perk for your weapons.",
                 price = 2, maxLevel = 1,
                 minLevel = 15,
                 icon = "icon16/medal_gold_1.png",
-                unlocks = { "perk_veteran_training" },
+                unlocks = { "ammo_rapidcycle", "mod_cooling_vents", "perk_veteran_training" },
             },
             ["212th_firerate"] = {
                 row = 1, col = 3,
@@ -156,6 +159,7 @@ SkillTrees.Tree = {
         Order = 2,
         Color = Color(150, 60, 60),
         MRSGroup = { "104th Mechanized" },
+        Attachments = { "fml_mw_optic_opk7", "fml_mw2r_optic_mars", "fml_mw_optic_mag_kobra", "fml_mw2r_optic_aug" }, -- unit scopes
         Skills = {
             ["104th_speed_1"] = {
                 row = 1, col = 1,
@@ -212,11 +216,11 @@ SkillTrees.Tree = {
             ["104th_capstone"] = {
                 row = 3, col = 3,
                 name = "Alpha of the Pack",
-                description = "Capstone. Unlocks the Quickdraw Training weapon perk: faster draw and movement.",
+                description = "Capstone. Unlocks a specialised Energization cell, internal modification and training perk for your weapons.",
                 price = 2, maxLevel = 1,
                 minLevel = 15,
                 icon = "icon16/medal_gold_1.png",
-                unlocks = { "perk_quickdraw_training" },
+                unlocks = { "ammo_highoutput", "mod_lightweight_internals", "perk_quickdraw_training" },
             },
         },
         Specializations = SPECS,
@@ -226,6 +230,7 @@ SkillTrees.Tree = {
         Order = 3,
         Color = Color(0, 210, 255),
         MRSGroup = { "Shock" },
+        Attachments = { "fml_mw_optic_holo", "fml_mw_optic_mag_holo_how", "fml_mw_optic_pkas", "fml_mw2r_optic_susat" }, -- unit scopes
         Skills = {
             ["shock_armor_1"] = {
                 row = 1, col = 1,
@@ -253,11 +258,11 @@ SkillTrees.Tree = {
             ["shock_capstone"] = {
                 row = 3, col = 2,
                 name = "Enforcer Marksmanship",
-                description = "Capstone. Unlocks the Marksman Training weapon perk: faster, tighter aim down sights.",
+                description = "Capstone. Unlocks a specialised Energization cell, internal modification and training perk for your weapons.",
                 price = 2, maxLevel = 1,
                 minLevel = 15,
                 icon = "icon16/medal_gold_1.png",
-                unlocks = { "perk_marksman_training" },
+                unlocks = { "ammo_stabilized", "mod_reinforced_barrel", "perk_marksman_training" },
             },
             ["shock_hp"] = {
                 row = 1, col = 2,
@@ -293,26 +298,100 @@ SkillTrees.Tree = {
         Specializations = SPECS,
     },
 
-    -- Universal single-unlock tree (no access fields = open to every job).
-    -- Gates the Clone Wars 2003 pack's Energization and Internal Mod attachments via `unlocks`.
-    ["Ordnance"] = {
+    -- Special operations: stronger ranks than the line units.
+    -- MRSGroup must match the unit's MRS group name exactly.
+    ["Muunilinst 10"] = {
         Order = 4,
-        Color = Color(200, 160, 40),
+        Color = Color(150, 110, 235),
+        MRSGroup = { "Muunilinst 10" },
+        Attachments = { "fml_mw_optic_1p29", "fml_mw2r_optic_acog_acog", "fml_mw_optic_mag_opk7", "fml_mw2r_optic_thermal" }, -- unit scopes
         Skills = {
-            ["adv_munitions"] = {
+            ["mun10_damage_1"] = {
+                row = 1, col = 1,
+                name = "Precision Strikes",
+                description = "Increase bullet damage by 6% per level",
+                price = 1, maxLevel = 3,
+                buffs = { damage = 0.06 },
+            },
+            ["mun10_hp"] = {
                 row = 1, col = 2,
-                name = "Advanced Munitions Training",
-                description = "Unlocks specialized Energization cells and internal weapon modifications.",
-                price = 4, maxLevel = 1,
-                icon = "icon16/bullet_star.png",
-                unlocks = {
-                    "ammo_highoutput", "ammo_rapidcycle", "ammo_stabilized",
-                    "mod_cooling_vents", "mod_lightweight_internals", "mod_reinforced_barrel",
-                },
+                name = "Commando Conditioning",
+                description = "Increase health by 12 per level",
+                price = 1, maxLevel = 3,
+                buffs = { hp = 12 },
+            },
+            ["mun10_reload"] = {
+                row = 1, col = 3,
+                name = "Rapid Reload",
+                description = "Increase reload speed by 6% per level",
+                price = 1, maxLevel = 3,
+                buffs = { reloadspeed = 0.06 },
+            },
+            ["mun10_speed"] = {
+                row = 1, col = 4,
+                name = "Infiltrator",
+                description = "Increase move speed by 3% per level",
+                price = 1, maxLevel = 2,
+                buffs = { movespeed = 0.03 },
+            },
+            ["mun10_damage_2"] = {
+                row = 2, col = 1,
+                name = "Lethal Focus",
+                description = "Increase bullet damage by a further 6% per level",
+                price = 2, maxLevel = 2,
+                requirement = "mun10_damage_1",
+                buffs = { damage = 0.06 },
+            },
+            ["mun10_armor"] = {
+                row = 2, col = 2,
+                name = "Special Issue Plating",
+                description = "Increase armor by 8 per level",
+                price = 1, maxLevel = 3,
+                requirement = "mun10_hp",
+                buffs = { armor = 8 },
+            },
+            ["mun10_firerate"] = {
+                row = 2, col = 3,
+                name = "Trigger Discipline",
+                description = "Increase fire rate by 6% per level",
+                price = 1, maxLevel = 2,
+                requirement = "mun10_reload",
+                buffs = { firerate = 0.06 },
+            },
+            ["mun10_res"] = {
+                row = 3, col = 2,
+                name = "Hardened Operative",
+                description = "Reduce damage taken by 1.5% per level",
+                price = 2, maxLevel = 3,
+                requirement = "mun10_armor",
+                buffs = { resistance = 0.015 },
+            },
+            ["mun10_capstone"] = {
+                row = 3, col = 3,
+                name = "Special Operations Loadout",
+                description = "Capstone. Unlocks a specialised Energization cell, internal modification and training perk for your weapons.",
+                price = 2, maxLevel = 1,
+                minLevel = 15,
+                icon = "icon16/medal_gold_1.png",
+                unlocks = { "ammo_highoutput", "mod_reinforced_barrel", "perk_marksman_training" },
             },
         },
+        Specializations = SPECS,
     },
 }
 
+-- Attachments locked for everyone until something unlocks them. The long-range sniper scopes
+-- are held back for the Scout specialisation.
+SkillTrees.LockedAttachments = {
+    "fml_mw2r_optic_dragunov",
+    "fml_mw2r_optic_wa2000",
+}
+
+-- Skills removed from the trees. Anyone who owned one is refunded price x level on their
+-- next join and it's removed from their data. Keep entries here after removing a skill.
+SkillTrees.RetiredSkills = {
+    ["adv_munitions"] = { price = 4, reason = "Advanced Munitions Training was replaced by the level 15 capstones" },
+}
+
 -- Rebuild lookups when this file is live-reloaded on its own
-if SkillTrees.BuildIndex then SkillTrees:BuildIndex() end
+if SkillTrees.BuildIndex then SkillTrees:BuildIndex() SkillTrees:PatchArcCW() end

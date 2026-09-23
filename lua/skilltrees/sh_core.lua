@@ -28,19 +28,27 @@ function SkillTrees:BuildIndex()
     self.SkillIndex       = {}
     self.Buffs            = {} -- id -> buffs, kept for anything outside the addon that still reads it
     self.TreeOrder        = {}
-    self.AttachmentLocks  = {} -- attachment id -> { skill ids that unlock it }
+    self.AttachmentLocks  = {} -- attachment id -> { skills = { skill ids }, trees = { tree names } }
+
+    local function lock(att)
+        self.AttachmentLocks[att] = self.AttachmentLocks[att] or { skills = {}, trees = {} }
+        return self.AttachmentLocks[att]
+    end
 
     for treeName, tree in pairs(self.Tree or {}) do
         table.insert(self.TreeOrder, treeName)
+        for _, att in ipairs(tree.Attachments or {}) do
+            table.insert(lock(att).trees, treeName)
+        end
         for id, info in pairs(tree.Skills or {}) do
             self.SkillIndex[id] = { info = info, tree = treeName }
             self.Buffs[id] = info.buffs
             for _, att in ipairs(info.unlocks or {}) do
-                self.AttachmentLocks[att] = self.AttachmentLocks[att] or {}
-                table.insert(self.AttachmentLocks[att], id)
+                table.insert(lock(att).skills, id)
             end
         end
     end
+    for _, att in ipairs(self.LockedAttachments or {}) do lock(att) end
 
     table.sort(self.TreeOrder, function(a, b)
         local oa, ob = self.Tree[a].Order or math.huge, self.Tree[b].Order or math.huge
@@ -262,23 +270,50 @@ end
 
 -- Attachments
 
--- Can `ply` use an ArcCW attachment? Attachments no skill `unlocks` are always allowed.
--- Called from each locked attachment's Hook_Compatible on both realms.
+-- Can `ply` use an ArcCW attachment? An attachment that no skill `unlocks`, no tree's
+-- `Attachments` and no LockedAttachments entry names is always allowed. Otherwise the player
+-- needs one of those skills or access to one of those trees.
 function SkillTrees:CanUseAttachment(ply, attID)
-    local lockedBy = self.AttachmentLocks[attID]
-    if not lockedBy then return true end
+    local lock = self.AttachmentLocks[attID]
+    if not lock then return true end
     if not IsValid(ply) or not ply:IsPlayer() then return false end
 
     -- Clients only receive their own skill data; don't hide other players' attachments
     if CLIENT and ply ~= LocalPlayer() then return true end
 
+    for _, treeName in ipairs(lock.trees) do
+        if self:CanAccessTree(ply, treeName) then return true end
+    end
+
     local skills = ply.SkillData and ply.SkillData.skills
     if not skills then return false end
-    for _, id in ipairs(lockedBy) do
+    for _, id in ipairs(lock.skills) do
         if (skills[id] or 0) > 0 then return true end
     end
     return false
 end
+
+-- Wrap Hook_Compatible on every locked ArcCW attachment so the lock applies without editing
+-- attachment files. Safe to call repeatedly; runs whenever ArcCW (re)loads its attachments.
+function SkillTrees:PatchArcCW()
+    if not ArcCW or not ArcCW.AttachmentTable then return end
+    for attID in pairs(self.AttachmentLocks) do
+        local atttbl = ArcCW.AttachmentTable[attID]
+        if atttbl and not atttbl.VtxSkillLock then
+            local original = atttbl.Hook_Compatible
+            atttbl.VtxSkillLock = true
+            atttbl.Hook_Compatible = function(wep, data)
+                if SkillTrees.AttachmentLocks[attID] and not SkillTrees:CanUseAttachment(wep:GetOwner(), attID) then
+                    return false
+                end
+                if original then return original(wep, data) end
+            end
+        end
+    end
+end
+
+hook.Add("ArcCW_PostLoadAtts", "SkillTrees_PatchAttachments", function() SkillTrees:PatchArcCW() end)
+hook.Add("InitPostEntity", "SkillTrees_PatchAttachments", function() SkillTrees:PatchArcCW() end)
 
 -- Points spent in a tree and the most it can take
 function SkillTrees:GetTreeProgress(skills, treeName)
@@ -343,3 +378,4 @@ function SkillTrees:FormatStat(stat, value)
 end
 
 SkillTrees:BuildIndex()
+SkillTrees:PatchArcCW() -- in case ArcCW loaded its attachments before this addon
