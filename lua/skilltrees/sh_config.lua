@@ -65,23 +65,6 @@ Skill fields
     icon             optional material path for the node (defaults to the first buff's icon)
 ]]
 
-local SPECS = {
-    ["Scout"] = {
-        name = "Scout",
-        description = "Unlocks long-range scopes and optics.",
-        unlockLevel = 15,
-        comingSoon = true,
-        Skills = {},
-    },
-    ["Frontline"] = {
-        name = "Frontline",
-        description = "Close-quarters assault training and suppressive firepower.",
-        unlockLevel = 15,
-        comingSoon = true,
-        Skills = {},
-    },
-}
-
 SkillTrees.Tree = {
     ["212th"] = {
         Order = 1,
@@ -152,7 +135,22 @@ SkillTrees.Tree = {
                 buffs = { salary_bonus = 0.05 },
             },
         },
-        Specializations = SPECS,
+        Specializations = {
+            ["Assault Specialist"] = {
+                name = "Assault Specialist",
+                description = "Close-range burst damage for breaching and pushing objectives.",
+                unlockLevel = 15,
+                comingSoon = true,
+                Skills = {},
+            },
+            ["Gunnery"] = {
+                name = "Gunnery",
+                description = "Sustained heavy fire that keeps the enemy pinned down.",
+                unlockLevel = 15,
+                comingSoon = true,
+                Skills = {},
+            },
+        },
     },
 
     ["104th"] = {
@@ -223,7 +221,22 @@ SkillTrees.Tree = {
                 unlocks = { "ammo_highoutput", "mod_lightweight_internals", "perk_quickdraw_training" },
             },
         },
-        Specializations = SPECS,
+        Specializations = {
+            ["Tactics"] = {
+                name = "Tactics",
+                description = "Mobile skirmishing: hit, reposition and flank.",
+                unlockLevel = 15,
+                comingSoon = true,
+                Skills = {},
+            },
+            ["Sharpshooter"] = {
+                name = "Sharpshooter",
+                description = "Long-range precision with access to long-range scopes.",
+                unlockLevel = 15,
+                comingSoon = true,
+                Skills = {},
+            },
+        },
     },
 
     ["Shock"] = {
@@ -295,7 +308,22 @@ SkillTrees.Tree = {
                 buffs = { firerate = 0.05 },
             },
         },
-        Specializations = SPECS,
+        Specializations = {
+            ["Shield Specialist"] = {
+                name = "Shield Specialist",
+                description = "Hold the line with heavier armour and damage reduction.",
+                unlockLevel = 15,
+                comingSoon = true,
+                Skills = {},
+            },
+            ["Gunnery"] = {
+                name = "Gunnery",
+                description = "Suppressive fire to control crowds and choke points.",
+                unlockLevel = 15,
+                comingSoon = true,
+                Skills = {},
+            },
+        },
     },
 
     -- Special operations: stronger ranks than the line units.
@@ -376,12 +404,27 @@ SkillTrees.Tree = {
                 unlocks = { "ammo_highoutput", "mod_reinforced_barrel", "perk_marksman_training" },
             },
         },
-        Specializations = SPECS,
+        Specializations = {
+            ["Concealment"] = {
+                name = "Concealment",
+                description = "Stealth operations and devastating first strikes.",
+                unlockLevel = 15,
+                comingSoon = true,
+                Skills = {},
+            },
+            ["Marksmanship"] = {
+                name = "Marksmanship",
+                description = "Sniper training with access to long-range scopes.",
+                unlockLevel = 15,
+                comingSoon = true,
+                Skills = {},
+            },
+        },
     },
 }
 
 -- Attachments locked for everyone until something unlocks them. The long-range sniper scopes
--- are held back for the Scout specialisation.
+-- are held back for the Sharpshooter (104th) and Marksmanship (Muunilinst 10) specialisations.
 SkillTrees.LockedAttachments = {
     "fml_mw2r_optic_dragunov",
     "fml_mw2r_optic_wa2000",
