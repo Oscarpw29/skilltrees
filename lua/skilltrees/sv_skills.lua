@@ -20,6 +20,7 @@ function SkillTrees:CommitLevels(ply, adds)
     self:SaveAndSync(ply)
     self:ApplyBuffs(ply)
 
+    self:RefreshWeapons(ply)
     net.Start("Vortex_RefreshWeapon")
     net.Send(ply)
 
@@ -66,6 +67,7 @@ function SkillTrees:ResetSkills(ply)
     self:SaveAndSync(ply)
     self:ApplyBuffs(ply)
 
+    self:RefreshWeapons(ply)
     net.Start("Vortex_RefreshWeapon")
     net.Send(ply)
 

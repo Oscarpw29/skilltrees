@@ -1,5 +1,13 @@
 -- Weapon stat hooks. Shared so client prediction and the server agree.
 
+-- ArcCW caches computed stats (RPM etc.), so buff changes only show up once the cache is cleared
+function SkillTrees:RefreshWeapons(ply)
+    if not IsValid(ply) then return end
+    for _, wep in ipairs(ply:GetWeapons()) do
+        if wep.ArcCW and wep.RecalcAllBuffs then wep:RecalcAllBuffs() end
+    end
+end
+
 hook.Add("ArcCW_Mod_Mult_RPM", "Vortex_Skills_ArcCW_RPM", function(wep, mult)
     local ply = wep:GetOwner()
     if not IsValid(ply) or not ply:IsPlayer() or not ply.SkillData then return mult end

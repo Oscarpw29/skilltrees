@@ -16,10 +16,7 @@ net.Receive("vtx_skills_menu", function()
 end)
 
 net.Receive("Vortex_RefreshWeapon", function()
-    local wep = LocalPlayer():GetActiveWeapon()
-    if IsValid(wep) and wep.ArcCW then
-        wep:PostModifyStats()
-    end
+    SkillTrees:RefreshWeapons(LocalPlayer())
 end)
 
 -- Send staged levels ({ id = levels }) to be saved

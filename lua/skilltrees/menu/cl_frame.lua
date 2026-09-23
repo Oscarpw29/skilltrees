@@ -1,7 +1,6 @@
 -- The skill window. Owns the staged (unsaved) allocation; child panels ask it for the
 -- effective skills/points and repaint from that every frame. Server syncs never rebuild it.
 local UI = SkillTrees.UI
-local BASE = vgui.GetControlTable("DFrame")
 local MENU = {}
 
 local TITLE_H  = 40
@@ -280,19 +279,6 @@ function MENU:PerformLayout(w, h)
     self.UndoBtn:SetSize(bw, 26)   self.UndoBtn:SetPos(w - PAD - bw * 3 - 18, by)
 end
 
-function MENU:Think()
-    if self.Saving and RealTime() > self.SavingUntil then self.Saving = false end
-
-    local staged = next(self.Staged) ~= nil
-    self.SaveBtn:SetDisabled(self.Saving or not staged)
-    self.UndoBtn:SetDisabled(self.Saving or not staged)
-    self.RespecBtn:SetDisabled(self.Saving)
-    self.SaveBtn.Label = self.Saving and "SAVING..." or "SAVE"
-
-    -- DFrame's own Think handles dragging
-    BASE.Think(self)
-end
-
 -- Painting
 
 function MENU:PaintBottomBar(w, h)
@@ -353,7 +339,21 @@ function MENU:PaintBottomBar(w, h)
     end
 end
 
+-- Runs from Paint rather than Think: overriding Think would replace DFrame's own
+-- Think, which handles dragging.
+function MENU:UpdateButtons()
+    if self.Saving and RealTime() > self.SavingUntil then self.Saving = false end
+
+    local staged = next(self.Staged) ~= nil
+    self.SaveBtn:SetDisabled(self.Saving or not staged)
+    self.UndoBtn:SetDisabled(self.Saving or not staged)
+    self.RespecBtn:SetDisabled(self.Saving)
+    self.SaveBtn.Label = self.Saving and "SAVING..." or "SAVE"
+end
+
 function MENU:Paint(w, h)
+    self:UpdateButtons()
+
     -- Outer frame
     surface.SetDrawColor(UI.Col.bg)
     surface.DrawRect(0, 0, w, h)
