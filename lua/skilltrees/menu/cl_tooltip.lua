@@ -104,10 +104,9 @@ function TIP:Paint(w, h)
     if not IsValid(node) then return end
     local col = node.TreeColor
 
-    draw.RoundedBox(4, 0, 0, w, h, Color(6, 12, 18, 250))
-    UI.Outline(0, 0, w, h, UI.Alpha(col, 200))
+    UI.RoundBox(0, 0, w, h, 8, Color(6, 12, 18), UI.Alpha(col, 200))
     surface.SetDrawColor(col)
-    surface.DrawRect(0, 0, w, 3)
+    surface.DrawRect(8, 1, w - 16, 2)
 
     local statusCol = ({ maxed = UI.Col.gold, partial = UI.Col.green, available = col, locked = UI.Col.textDim })[self.Status]
     draw.SimpleText(self.Title, "VTX_Heading", PAD, PAD, col)

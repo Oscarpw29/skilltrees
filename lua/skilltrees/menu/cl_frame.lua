@@ -188,8 +188,9 @@ function MENU:BuildTabs()
         tab.Paint = function(pnl, w, h)
             local col = SkillTrees.Tree[entry.name].Color or UI.Col.frameEdge
             local active = self.TreeName == entry.name
-            surface.SetDrawColor(active and UI.Alpha(col, 60) or (pnl:IsHovered() and UI.Alpha(col, 30) or Color(0, 0, 0, 0)))
-            surface.DrawRect(0, 0, w, h)
+            if active or pnl:IsHovered() then
+                draw.RoundedBoxEx(5, 0, 0, w, h, UI.Alpha(col, active and 60 or 30), true, true, false, false)
+            end
             if active then
                 surface.SetDrawColor(col)
                 surface.DrawRect(0, h - 2, w, 2)
@@ -285,9 +286,7 @@ function MENU:PaintBottomBar(w, h)
     local y = h - BOTTOM_H
     local sd = LocalPlayer().SkillData or {}
 
-    surface.SetDrawColor(4, 10, 16, 255)
-    surface.DrawRect(PAD, y + 6, w - PAD * 2, BOTTOM_H - 12)
-    UI.Outline(PAD, y + 6, w - PAD * 2, BOTTOM_H - 12, UI.Col.edgeDim)
+    UI.RoundBox(PAD, y + 6, w - PAD * 2, BOTTOM_H - 12, 6, Color(4, 10, 16), UI.Col.edgeDim)
     local cy = y + BOTTOM_H / 2
 
     -- Level + XP
@@ -298,10 +297,11 @@ function MENU:PaintBottomBar(w, h)
 
     draw.SimpleText("LVL " .. level, "VTX_Heading", PAD + 14, cy - 7, UI.Col.text, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
     local xpX, xpW = PAD + 14, 150
-    surface.SetDrawColor(20, 30, 40)
-    surface.DrawRect(xpX, cy + 6, xpW, 6)
-    surface.SetDrawColor(140, 90, 230)
-    surface.DrawRect(xpX, cy + 6, math.floor(xpW * self.XPShown), 6)
+    draw.RoundedBox(3, xpX, cy + 6, xpW, 6, Color(20, 30, 40))
+    local xpFill = math.floor(xpW * self.XPShown)
+    if xpFill > 0 then
+        draw.RoundedBox(math.min(3, math.floor(xpFill / 2)), xpX, cy + 6, xpFill, 6, Color(140, 90, 230))
+    end
     local xpText = maxed and "MAX LEVEL" or ((sd.xp or 0) .. " / " .. SkillTrees:GetRequiredXP(level) .. " XP")
     draw.SimpleText(xpText, "VTX_Small", xpX + xpW, cy - 7, UI.Col.textDim, TEXT_ALIGN_RIGHT, TEXT_ALIGN_CENTER)
 
@@ -312,8 +312,7 @@ function MENU:PaintBottomBar(w, h)
     surface.SetFont("VTX_Rank")
     px = px + surface.GetTextSize("TRAINING POINTS AVAILABLE") + 10
 
-    draw.RoundedBox(3, px, cy - 10, 30, 20, Color(4, 8, 12))
-    UI.Outline(px, cy - 10, 30, 20, UI.Col.gold)
+    UI.RoundBox(px, cy - 10, 30, 20, 5, Color(4, 8, 12), UI.Col.gold)
     draw.SimpleText(tostring(available), "VTX_Rank", px + 15, cy, UI.Col.text, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
     px = px + 40
 
@@ -324,10 +323,9 @@ function MENU:PaintBottomBar(w, h)
     for i = 1, shown do
         local x = px + (i - 1) * (pipW + pipGap)
         if i <= available then
-            surface.SetDrawColor(UI.Col.gold)
-            surface.DrawRect(x, cy - 8, pipW, 16)
+            draw.RoundedBox(2, x, cy - 8, pipW, 16, UI.Col.gold)
         else
-            UI.Outline(x, cy - 8, pipW, 16, UI.Col.staged)
+            UI.RoundBox(x, cy - 8, pipW, 16, 2, Color(4, 10, 16), UI.Col.staged)
         end
     end
 
@@ -355,18 +353,13 @@ function MENU:Paint(w, h)
     self:UpdateButtons()
 
     -- Outer frame
-    surface.SetDrawColor(UI.Col.bg)
-    surface.DrawRect(0, 0, w, h)
-    UI.Outline(0, 0, w, h, UI.Col.frameEdge, 2)
+    UI.RoundBox(0, 0, w, h, 8, UI.Col.bg, UI.Col.frameEdge, 2)
 
     -- Title bar
-    surface.SetDrawColor(UI.Col.titleBar)
-    surface.DrawRect(2, 2, w - 4, TITLE_H - 2)
-    surface.SetMaterial(UI.Mat.gradDown)
-    surface.SetDrawColor(UI.Alpha(UI.Col.frameEdge, 60))
-    surface.DrawTexturedRect(2, 2, w - 4, TITLE_H - 2)
+    draw.RoundedBoxEx(6, 2, 2, w - 4, TITLE_H - 2, UI.Col.titleBar, true, true, false, false)
+    UI.RoundGradient(2, 2, w - 4, TITLE_H - 2, 6, UI.Mat.gradDown, UI.Alpha(UI.Col.frameEdge, 60), true, false)
     surface.SetDrawColor(UI.Col.frameEdge)
-    surface.DrawRect(0, TITLE_H, w, 1)
+    surface.DrawRect(2, TITLE_H, w - 4, 1)
 
     local title = "SKILL TREE"
     if self.TreeName then title = title .. " - " .. string.upper(self.TreeName) end

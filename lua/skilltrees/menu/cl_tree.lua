@@ -129,8 +129,7 @@ function TREE:PaintGhost(w, h)
         local startCol = (SkillTrees.TREE_COLS - n) / 2
         for i = 1, n do
             local cx = self:CellCenter(r, startCol + i)
-            draw.RoundedBox(4, cx - size / 2, cy - size / 2, size, size, Color(20, 26, 32, 200))
-            UI.Outline(cx - size / 2, cy - size / 2, size, size, Color(40, 48, 56))
+            UI.RoundBox(cx - size / 2, cy - size / 2, size, size, 6, Color(20, 26, 32), Color(40, 48, 56))
         end
     end
 
@@ -140,8 +139,7 @@ function TREE:PaintGhost(w, h)
     local unlock = spec.unlockLevel or SkillTrees.MaxLevel
     local cardW, cardH = math.min(w - 40, 240), 104
     local x, y = (w - cardW) / 2, gy + (gh - cardH) / 2
-    draw.RoundedBox(6, x, y, cardW, cardH, Color(6, 10, 14, 235))
-    UI.Outline(x, y, cardW, cardH, UI.Alpha(self.Color, 90))
+    UI.RoundBox(x, y, cardW, cardH, 8, Color(6, 10, 14), UI.Alpha(self.Color, 90))
 
     draw.SimpleText(string.upper(spec.name or "?"), "VTX_Heading", w / 2, y + 20, UI.Alpha(self.Color, 230), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
     local lines = UI.Wrap(spec.description or "", "VTX_Small", cardW - 20)
@@ -166,12 +164,10 @@ function TREE:PaintFooter(w, h)
     end
 
     local y = h - FOOTER_H
-    surface.SetDrawColor(0, 0, 0, 120)
-    surface.DrawRect(1, y, w - 2, FOOTER_H - 1)
+    draw.RoundedBoxEx(UI.Radius - 1, 1, y, w - 2, FOOTER_H - 1, Color(0, 0, 0, 120), false, false, true, true)
 
     local box = 26
-    draw.RoundedBox(3, 10, y + (FOOTER_H - 18) / 2, box, 18, Color(4, 8, 12, 250))
-    UI.Outline(10, y + (FOOTER_H - 18) / 2, box, 18, UI.Alpha(self.Color, 150))
+    UI.RoundBox(10, y + (FOOTER_H - 18) / 2, box, 18, 4, Color(4, 8, 12), UI.Alpha(self.Color, 150))
     draw.SimpleText(tostring(spent), "VTX_Rank", 10 + box / 2, y + FOOTER_H / 2, UI.Col.text, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 
     draw.SimpleText(title, "VTX_Heading", 44, y + FOOTER_H / 2, self.Kind == "base" and UI.Col.text or UI.Col.textDim, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)

@@ -82,7 +82,10 @@ net.Receive("vtx_skills_reset", function(len, ply)
     ply:ChatPrint("[VORTEX] Skills reset. Refunded " .. refund .. " point(s).")
 end)
 
-function SkillTrees:ApplyBuffs(ply)
+-- keepCurrent: raise/lower the caps but keep the player's current health/armor (shifted by
+-- the change in max, clamped) instead of healing to full. Used for timed buffs (stims) so
+-- using or losing one is never a free heal.
+function SkillTrees:ApplyBuffs(ply, keepCurrent)
     if not IsValid(ply) or not ply.SkillData then return end
 
     local job = ply.getJobTable and ply:getJobTable()
@@ -92,9 +95,19 @@ function SkillTrees:ApplyBuffs(ply)
     local maxHP = (job.maxhealth or 100) + buffs.hp
     local armor = (job.armor or 0) + buffs.armor
 
-    ply:SetMaxHealth(maxHP)
-    ply:SetHealth(maxHP) -- heal to full on purchase/spawn, intended
-    ply:SetArmor(armor)
+    if keepCurrent then
+        if not ply:Alive() then return end -- caps get re-applied on respawn
+        local hpDelta = maxHP - ply:GetMaxHealth()
+        local armorDelta = armor - ply:GetNWInt("MaxArmor", armor)
+
+        ply:SetMaxHealth(maxHP)
+        ply:SetHealth(math.Clamp(ply:Health() + math.max(hpDelta, 0), 1, maxHP))
+        ply:SetArmor(math.Clamp(ply:Armor() + math.max(armorDelta, 0), 0, armor))
+    else
+        ply:SetMaxHealth(maxHP)
+        ply:SetHealth(maxHP) -- heal to full on purchase/spawn, intended
+        ply:SetArmor(armor)
+    end
 
     ply:SetNWInt("MaxHP", maxHP)
     ply:SetNWInt("MaxArmor", armor)

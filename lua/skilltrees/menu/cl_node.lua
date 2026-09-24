@@ -55,16 +55,13 @@ function NODE:Paint(w)
     -- Glow: pulses on nodes you can put a point into right now
     if canAdd then
         local pulse = 0.5 + 0.5 * math.sin(RealTime() * 4)
-        draw.RoundedBox(6, 0, 0, s, s, UI.Alpha(col, 30 + 50 * pulse))
+        draw.RoundedBox(10, 0, 0, s, s, UI.Alpha(col, 30 + 50 * pulse))
     end
 
     -- Frame and face
-    draw.RoundedBox(4, 2, 2, s - 4, s - 4, UI.Alpha(edge, hovered and 255 or (locked and 140 or 210)))
-    draw.RoundedBox(3, 4, 4, s - 8, s - 8, locked and Color(14, 18, 22) or Color(18, 28, 38))
-
-    surface.SetMaterial(UI.Mat.gradDown)
-    surface.SetDrawColor(col.r, col.g, col.b, locked and 10 or (hovered and 70 or 40))
-    surface.DrawTexturedRect(4, 4, s - 8, s - 8)
+    draw.RoundedBox(8, 2, 2, s - 4, s - 4, UI.Alpha(edge, hovered and 255 or (locked and 140 or 210)))
+    draw.RoundedBox(6, 4, 4, s - 8, s - 8, locked and Color(14, 18, 22) or Color(18, 28, 38))
+    UI.RoundGradient(4, 4, s - 8, s - 8, 6, UI.Mat.gradDown, Color(col.r, col.g, col.b, locked and 10 or (hovered and 70 or 40)), true, true)
 
     -- Icon (or initials when there's no icon)
     local inset = math.floor(s * 0.22)
@@ -79,7 +76,7 @@ function NODE:Paint(w)
     -- Rank-up flash
     local flash = self.FlashUntil - RealTime()
     if flash > 0 then
-        draw.RoundedBox(4, 2, 2, s - 4, s - 4, Color(255, 255, 255, 200 * flash / 0.45))
+        draw.RoundedBox(8, 2, 2, s - 4, s - 4, Color(255, 255, 255, 200 * flash / 0.45))
     end
 
     -- Rank badge "cur/max" centred under the icon, like SWTOR
@@ -94,8 +91,7 @@ function NODE:Paint(w)
     local tw = surface.GetTextSize(text)
     local bw = tw + 10
     local bx, by = (w - bw) / 2, s - BADGE_H / 2 - 2
-    draw.RoundedBox(3, bx, by, bw, BADGE_H, Color(4, 8, 12, 245))
-    UI.Outline(bx, by, bw, BADGE_H, UI.Alpha(staged > 0 and UI.Col.staged or edge, 160))
+    UI.RoundBox(bx, by, bw, BADGE_H, 7, Color(4, 8, 12), UI.Alpha(staged > 0 and UI.Col.staged or edge, 160))
     draw.SimpleText(text, "VTX_Rank", w / 2, by + BADGE_H / 2, rankCol, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 
     return true

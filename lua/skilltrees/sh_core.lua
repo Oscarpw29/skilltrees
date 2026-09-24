@@ -351,12 +351,35 @@ function SkillTrees:CalculateBuffs(ply)
         end
     end
 
+    -- OG_core is optional: if it's installed, fold in every other addon's contributed
+    -- stats (e.g. OG_stims buffs) so every hook below picks them up for free.
+    if OG and OG.Stats then
+        for stat, amount in pairs(OG.Stats.Get(ply)) do
+            stats[stat] = (stats[stat] or 0) + amount
+        end
+    end
+
     ply.SkillBuffs = stats
     return stats
 end
 
 function SkillTrees:InvalidateBuffs(ply)
     if IsValid(ply) then ply.SkillBuffs = nil end
+end
+
+-- When OG_core is installed, any addon (e.g. OG_stims) can call OG.Stats.Invalidate(ply)
+-- to tell every stat consumer its cached total is stale. Recompute ours and, on the
+-- server, re-apply HP/armor and refresh weapon stat caches the same way a skill respec
+-- would (ApplyBuffs/RefreshWeapons already read straight through CalculateBuffs).
+do -- registered unconditionally: OG_core may load after this addon (workshop mount order)
+    hook.Add("OG_StatsChanged", "SkillTrees_OGStatsChanged", function(ply)
+        if not IsValid(ply) or not ply.SkillData then return end
+        SkillTrees:InvalidateBuffs(ply)
+        if SERVER then
+            SkillTrees:ApplyBuffs(ply, true)
+            SkillTrees:RefreshWeapons(ply)
+        end
+    end)
 end
 
 function SkillTrees:EmptyStats()
