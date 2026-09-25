@@ -95,25 +95,35 @@ end)
 
 -- Money
 
+-- What the player is actually paid. Ranks/whitelists (MRS) change the "salary" DarkRPVar rather
+-- than the job table, so the job's base pay is only a fallback.
 local function jobSalary(ply)
+    local paid = ply.getDarkRPVar and ply:getDarkRPVar("salary")
+    if paid then return paid end
+
     local job = ply.getJobTable and ply:getJobTable()
     return job and job.salary or 0
 end
 
--- Salary bonus on DarkRP's payday interval. DarkRP_PlayerEarned passes the team name rather
--- than "salary" as the reason, so a matching standalone timer is simpler and reliable.
-hook.Add("InitPostEntity", "Vortex_SalaryBonus_Setup", function()
-    local delay = (GAMEMODE and GAMEMODE.Config and GAMEMODE.Config.paydelay) or 160
+-- Salary bonus, applied inside DarkRP's own payday. DarkRP asks every `playerGetSalary` hook
+-- for (suppress, message, newAmount) using the player's real salary, so the bonus is a share
+-- of what they're really about to be paid, arrives in the same payday message, and is skipped
+-- for arrested players like the base salary. `salary_flat` is a fixed extra amount (medals).
+-- Only one playerGetSalary hook's return is used, which is why the flat and percentage
+-- bonuses live in this single hook rather than one per addon.
+hook.Add("playerGetSalary", "Vortex_SalaryBonus", function(ply, amount)
+    local buffs = buffsOf(ply)
+    if not buffs then return end
 
-    timer.Create("Vortex_SalaryBonus", delay, 0, function()
-        for _, ply in ipairs(player.GetAll()) do
-            local buffs = buffsOf(ply)
-            if not buffs or buffs.salary_bonus <= 0 or not ply:Alive() then continue end
+    local pct, flat = buffs.salary_bonus or 0, buffs.salary_flat or 0
+    if pct <= 0 and flat <= 0 then return end
+    if ply.getDarkRPVar and ply:getDarkRPVar("AFK") then return end -- DarkRP zeroes AFK pay
 
-            local bonus = math.Round(jobSalary(ply) * buffs.salary_bonus)
-            if bonus > 0 then ply:addMoney(bonus) end
-        end
-    end)
+    amount = amount or 0
+    local bonus = math.Round(amount * pct) + flat
+    if bonus <= 0 then return end
+
+    return false, nil, amount + bonus
 end)
 
 local function killReward(attacker)
