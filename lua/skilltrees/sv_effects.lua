@@ -53,15 +53,10 @@ hook.Add("ScalePlayerDamage", "Vortex_Skills_CombatAndResistance", function(ply,
     end
 end)
 
-hook.Add("ArcCW_ModifyReloadTime", "Vortex_Skills_ReloadSpeed", function(wep, duration)
-    local buffs = buffsOf(wep:GetOwner())
-    if buffs and buffs.reloadspeed > 0 then
-        return duration * math.Clamp(1 - buffs.reloadspeed, 0.5, 1)
-    end
-end)
+-- ArcCW damage, fire rate and reload speed are applied through ArcCW's own stat hooks in sh_hooks.lua.
 
 -- TFA fires through standard FireBullets, so outgoing bullet damage is scaled here.
--- IsTFAWeapon is TFA's marker field.
+-- IsTFAWeapon is TFA's marker field (ArcCW weapons are not scaled here - see sh_hooks.lua).
 hook.Add("EntityTakeDamage", "Vortex_TFA_BulletDamage", function(target, dmginfo)
     if not dmginfo:IsBulletDamage() then return end
 
