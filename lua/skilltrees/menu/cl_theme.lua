@@ -7,19 +7,21 @@
 SkillTrees.UI = SkillTrees.UI or {}
 local UI = SkillTrees.UI
 
+-- Skilltrees' own menu files reference these VTX_* fonts by name, so they are created whether or
+-- not OG_core is installed (OG_core only provides colours and draw helpers, under OG_* fonts).
+surface.CreateFont("VTX_Title",   { font = "Roboto", size = 20, weight = 800 })
+surface.CreateFont("VTX_Heading", { font = "Roboto", size = 16, weight = 800 })
+surface.CreateFont("VTX_Body",    { font = "Roboto", size = 14, weight = 500 })
+surface.CreateFont("VTX_Small",   { font = "Roboto", size = 12, weight = 500 })
+surface.CreateFont("VTX_Rank",    { font = "Roboto", size = 12, weight = 800 })
+surface.CreateFont("VTX_Big",     { font = "Roboto", size = 26, weight = 800 })
+surface.CreateFont("VTX_Initial", { font = "Roboto", size = 22, weight = 800 })
+
 if OG and OG.UI then
-    -- OG_core is loaded: just borrow its theme.
+    -- OG_core is loaded: just borrow its colours and helpers.
     for k, v in pairs(OG.UI) do UI[k] = v end
 else
     -- Standalone fallback (no OG_core installed) - identical to the original theme.
-    surface.CreateFont("VTX_Title",   { font = "Roboto", size = 20, weight = 800 })
-    surface.CreateFont("VTX_Heading", { font = "Roboto", size = 16, weight = 800 })
-    surface.CreateFont("VTX_Body",    { font = "Roboto", size = 14, weight = 500 })
-    surface.CreateFont("VTX_Small",   { font = "Roboto", size = 12, weight = 500 })
-    surface.CreateFont("VTX_Rank",    { font = "Roboto", size = 12, weight = 800 })
-    surface.CreateFont("VTX_Big",     { font = "Roboto", size = 26, weight = 800 })
-    surface.CreateFont("VTX_Initial", { font = "Roboto", size = 22, weight = 800 })
-
     UI.Col = {
         bg        = Color(8, 14, 22),
         frame     = Color(12, 22, 34),
