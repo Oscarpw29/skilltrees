@@ -243,7 +243,7 @@ SkillTrees.Tree = {
         Order = 3,
         Color = Color(0, 210, 255),
         MRSGroup = { "Shock Troopers" },
-        Attachments = { "fml_mw_optic_holo", "fml_mw_optic_mag_holo_how", "fml_mw_optic_pkas", "fml_mw2r_optic_susat" }, -- unit scopes
+        Attachments = { "fml_mw_optic_holo", "fml_mw_optic_mag_holo", "fml_mw_optic_pkas", "fml_mw2r_optic_susat" }, -- unit scopes
         Skills = {
             ["shock_armor_1"] = {
                 row = 1, col = 1,
