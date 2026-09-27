@@ -254,7 +254,7 @@ SkillTrees.Tree = {
             },
             ["shock_armorregen"] = {
                 row = 2, col = 1,
-                name = "Reinforced Gear",
+                name = "Reinforced Gear",   
                 description = "Regenerate 1 armor every 2 seconds out of combat",
                 price = 1, maxLevel = 2,
                 requirement = "shock_armor_1",
