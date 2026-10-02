@@ -6,22 +6,22 @@ SkillTrees = SkillTrees or {}
 -- `pct` stats are fractions (0.05 = 5%) and are shown as percentages in the menu.
 -- `icon` is the node icon used when a skill doesn't set its own `icon` (built-in silk icons).
 SkillTrees.StatLabels = {
-    hp               = { label = "Max Health",    icon = "icon16/heart.png" },
-    armor            = { label = "Armor",         icon = "icon16/shield.png" },
+    hp               = { label = "Max Health",    icon = "vtx_skills/hp.png" },
+    armor            = { label = "Armor",         icon = "vtx_skills/armor.png" },
     speed            = { label = "Speed",         icon = "icon16/user_go.png" },
     hpregen          = { label = "Health Regen",  icon = "icon16/heart_add.png",   suffix = " / 2s" },
-    armorregen       = { label = "Armor Regen",   icon = "icon16/shield_add.png",  suffix = " / 2s" },
-    firerate         = { label = "Fire Rate",     icon = "icon16/lightning.png",   pct = true },
-    reloadspeed      = { label = "Reload Speed",  icon = "icon16/arrow_refresh.png", pct = true },
-    movespeed        = { label = "Move Speed",    icon = "icon16/user_go.png",     pct = true },
+    armorregen       = { label = "Armor Regen",   icon = "vtx_skills/armorregen.png",  suffix = " / 2s" },
+    firerate         = { label = "Fire Rate",     icon = "vtx_skills/firerate.png",   pct = true },
+    reloadspeed      = { label = "Reload Speed",  icon = "vtx_skills/reloadspeed.png", pct = true },
+    movespeed        = { label = "Move Speed",    icon = "vtx_skills/movespeed.png",     pct = true },
     resistance       = { label = "Damage Resist", icon = "icon16/shield.png",      pct = true },
     damage           = { label = "Bullet Damage", icon = "icon16/bomb.png",        pct = true },
-    salary_bonus     = { label = "Salary",        icon = "icon16/money.png",       pct = true },
+    salary_bonus     = { label = "Salary",        icon = "vtx_skills/money.png",       pct = true },
     salary_per_kill  = { label = "Pay per Kill",  icon = "icon16/money_add.png",   pct = true },
     lscs_damage      = { label = "Saber Damage",  icon = "icon16/wand.png",        pct = true },
     lscs_force_regen = { label = "Force Regen",   icon = "icon16/wand.png",        suffix = " / 2s" },
     lscs_block       = { label = "Saber Block",   icon = "icon16/shield.png",      pct = true },
-    xp_boost         = { label = "XP Gain",       icon = "icon16/star.png",        pct = true },
+    xp_boost         = { label = "XP Gain",       icon = "vtx_skills/xp.png",        pct = true },
 }
 
 function SkillTrees:BuildIndex()

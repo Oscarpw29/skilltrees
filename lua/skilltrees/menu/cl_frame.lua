@@ -196,11 +196,27 @@ function MENU:BuildTabs()
                 surface.DrawRect(0, h - 2, w, 2)
             end
             local label = string.upper(entry.name) .. (entry.preview and "  (PREVIEW)" or "")
-            draw.SimpleText(label, "VTX_Rank", w / 2, h / 2, active and UI.Col.text or UI.Col.textDim, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+            local textCol = active and UI.Col.text or UI.Col.textDim
+
+            -- Optional unit badge to the left of the name
+            local emblem = SkillTrees.Tree[entry.name].Emblem and UI.Icon(SkillTrees.Tree[entry.name].Emblem)
+            if emblem then
+                local size = h - 10
+                surface.SetFont("VTX_Rank")
+                local tw = surface.GetTextSize(label)
+                local x = (w - (size + 6 + tw)) / 2
+                surface.SetMaterial(emblem)
+                surface.SetDrawColor(255, 255, 255, active and 255 or 190)
+                surface.DrawTexturedRect(x, (h - size) / 2, size, size)
+                draw.SimpleText(label, "VTX_Rank", x + size + 6, h / 2, textCol, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+            else
+                draw.SimpleText(label, "VTX_Rank", w / 2, h / 2, textCol, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+            end
         end
         surface.SetFont("VTX_Rank")
         local tw = surface.GetTextSize(string.upper(entry.name) .. (entry.preview and "  (PREVIEW)" or ""))
-        tab:SetWide(tw + 28)
+        local hasEmblem = SkillTrees.Tree[entry.name].Emblem and UI.Icon(SkillTrees.Tree[entry.name].Emblem)
+        tab:SetWide(tw + 28 + (hasEmblem and (TABS_H - 14) + 6 or 0))
         table.insert(self.Tabs, tab)
     end
 end

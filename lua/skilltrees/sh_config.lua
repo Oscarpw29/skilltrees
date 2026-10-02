@@ -39,6 +39,7 @@ SkillTrees.RankMultipliers = {
 --[[
 Tree fields
     Color            tree accent colour
+    Emblem           optional material path for the unit badge shown on its tab
     Order            optional sort position in the menu (lower first, then by name)
     Access (a tree with none of these is open to everyone; matching any one grants access):
         MRSGroup     { "212th Attack" }   must match the player's MRS group exactly
@@ -223,6 +224,7 @@ SkillTrees.Tree = {
     },
 
     ["104th"] = {
+        Emblem = "vtx_skills/unit_104th.png",
         Order = 2,
         Color = Color(150, 60, 60),
         MRSGroup = { "104th Mechanized" },
@@ -371,6 +373,7 @@ SkillTrees.Tree = {
     },
 
     ["Shock"] = {
+        Emblem = "vtx_skills/unit_shock.png",
         Order = 3,
         Color = Color(0, 210, 255),
         MRSGroup = { "Shock Troopers" },
@@ -522,6 +525,7 @@ SkillTrees.Tree = {
     -- Special operations: stronger ranks than the line units.
     -- MRSGroup must match the unit's MRS group name exactly.
     ["Muunilinst 10"] = {
+        Emblem = "vtx_skills/unit_mun10.png",
         Order = 4,
         Color = Color(150, 110, 235),
         MRSGroup = { "Muunilinst 10" },
@@ -645,7 +649,7 @@ SkillTrees.Tree = {
                         description = "Increase bullet damage by 4% and unlock the Dragunov PSO-1 scope",
                         price = 2, maxLevel = 1,
                         requirement = "mun10_mark_aim",
-                        icon = "icon16/zoom.png",
+                        icon = "vtx_skills/scope.png",
                         unlocks = { "fml_mw2r_optic_dragunov" },
                         buffs = { damage = 0.04 },
                     },
