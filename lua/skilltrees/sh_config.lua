@@ -1,7 +1,7 @@
 -- Everything a server owner is expected to edit lives in this file.
 SkillTrees = SkillTrees or {}
 
-SkillTrees.MaxLevel = 15
+SkillTrees.MaxLevel = 30
 
 -- XP needed to go from `level` to `level + 1` is floor(XP_BASE * level ^ XP_EXPONENT)
 SkillTrees.XP_BASE     = 75
