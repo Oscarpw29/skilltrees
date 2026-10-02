@@ -47,6 +47,16 @@ function SkillTrees:BuildIndex()
                 table.insert(lock(att).skills, id)
             end
         end
+        -- Specialisation skills live beside the base tree's, tagged with their specialisation
+        for specName, spec in pairs(tree.Specializations or {}) do
+            for id, info in pairs(spec.Skills or {}) do
+                self.SkillIndex[id] = { info = info, tree = treeName, spec = specName }
+                self.Buffs[id] = info.buffs
+                for _, att in ipairs(info.unlocks or {}) do
+                    table.insert(lock(att).skills, id)
+                end
+            end
+        end
     end
     for _, att in ipairs(self.LockedAttachments or {}) do lock(att) end
 
@@ -57,10 +67,39 @@ function SkillTrees:BuildIndex()
     end)
 end
 
+-- info, treeName, specName (specName is nil for base-tree skills)
 function SkillTrees:GetSkill(skillID)
     local entry = self.SkillIndex[skillID]
-    if not entry then return nil, nil end
-    return entry.info, entry.tree
+    if not entry then return nil, nil, nil end
+    return entry.info, entry.tree, entry.spec
+end
+
+-- The skills of a base tree (specName nil) or one of its specialisations
+function SkillTrees:GetGroupSkills(treeName, specName)
+    local tree = self.Tree[treeName]
+    if not tree then return {} end
+    if specName then
+        local spec = tree.Specializations and tree.Specializations[specName]
+        return spec and spec.Skills or {}
+    end
+    return tree.Skills or {}
+end
+
+-- Does the specialisation have skills to learn yet? (Empty ones are "coming soon" placeholders.)
+function SkillTrees:SpecIsLive(treeName, specName)
+    return next(self:GetGroupSkills(treeName, specName)) ~= nil
+end
+
+-- The specialisation of `treeName` the player has put points into (nil = none yet). A tree's
+-- specialisations are either/or, so this is the one they're committed to.
+function SkillTrees:HeldSpec(skills, treeName)
+    local tree = self.Tree[treeName]
+    for specName, spec in pairs(tree and tree.Specializations or {}) do
+        for id in pairs(spec.Skills or {}) do
+            if (skills[id] or 0) > 0 then return specName end
+        end
+    end
+    return nil
 end
 
 function SkillTrees:GetRequiredXP(level)
@@ -121,15 +160,22 @@ end
 -- Functions below take an explicit `skills` table ({ id = level }) so the menu can ask the
 -- same questions about its staged (unsaved) allocation that the server asks about saved data.
 
-function SkillTrees:GetRowGate(row)
-    return ((row or 1) - 1) * self.ROW_POINTS
+-- Points needed in the rows above to open `row`. A specialisation can set its own `RowPoints`
+-- (its trees are smaller and share the player's points with the base tree).
+function SkillTrees:GetRowGate(row, treeName, specName)
+    local per = self.ROW_POINTS
+    if specName then
+        local tree = self.Tree[treeName]
+        local spec = tree and tree.Specializations and tree.Specializations[specName]
+        per = spec and spec.RowPoints or per
+    end
+    return ((row or 1) - 1) * per
 end
 
--- Points spent in `treeName` in rows above `row`
-function SkillTrees:SpentBelowRow(skills, treeName, row)
-    local tree = self.Tree[treeName]
+-- Points spent in the same group (base tree, or one specialisation) in rows above `row`
+function SkillTrees:SpentBelowRow(skills, treeName, row, specName)
     local spent = 0
-    for id, info in pairs(tree and tree.Skills or {}) do
+    for id, info in pairs(self:GetGroupSkills(treeName, specName)) do
         if (info.row or 1) < row then
             spent = spent + (info.price or 1) * (skills[id] or 0)
         end
@@ -138,19 +184,27 @@ function SkillTrees:SpentBelowRow(skills, treeName, row)
 end
 
 -- Is the skill's row open and its requirement maxed? Returns ok, reason.
--- `level` is optional; when given, the skill's minLevel is checked too.
+-- `level` is optional; when given, the skill's minLevel (and its specialisation's) is checked too.
 function SkillTrees:IsUnlocked(skills, skillID, level)
-    local info, treeName = self:GetSkill(skillID)
+    local info, treeName, specName = self:GetSkill(skillID)
     if not info then return false, "Unknown skill." end
 
     if level and info.minLevel and level < info.minLevel then
         return false, "Requires level " .. info.minLevel .. "."
     end
 
+    if specName and level then
+        local spec = self.Tree[treeName].Specializations[specName]
+        if spec.unlockLevel and level < spec.unlockLevel then
+            return false, "Specialisations unlock at level " .. spec.unlockLevel .. "."
+        end
+    end
+
     local row = info.row or 1
-    local need = self:GetRowGate(row) - self:SpentBelowRow(skills, treeName, row)
+    local need = self:GetRowGate(row, treeName, specName) - self:SpentBelowRow(skills, treeName, row, specName)
     if need > 0 then
-        return false, "Spend " .. need .. " more point(s) in " .. treeName .. " to unlock row " .. row .. "."
+        local where = specName or treeName
+        return false, "Spend " .. need .. " more point(s) in " .. where .. " to unlock row " .. row .. "."
     end
 
     if info.requirement then
@@ -180,11 +234,20 @@ end
 
 -- Can `ply` add one level of `skillID` on top of `skills` with `points` unspent? Returns ok, reason.
 function SkillTrees:CanAddLevel(ply, skills, points, skillID)
-    local info, treeName = self:GetSkill(skillID)
+    local info, treeName, specName = self:GetSkill(skillID)
     if not info then return false, "Unknown skill." end
 
     if not self:CanAccessTree(ply, treeName) then
         return false, "Your unit can't learn " .. treeName .. " skills."
+    end
+
+    -- A tree's specialisations are either/or: once you've put a point into one, the others are shut.
+    -- Taking every point back out of it (or resetting) reopens the choice.
+    if specName then
+        local held = self:HeldSpec(skills, treeName)
+        if held and held ~= specName then
+            return false, "You've chosen " .. held .. ". Remove its points or reset your skills to switch."
+        end
     end
     if info.allowedJobs and not listHas(info.allowedJobs, team.GetName(ply:Team())) then
         return false, "Your current job can't learn this."
@@ -215,13 +278,12 @@ function SkillTrees:CanRemoveLevel(skills, skillID, floor)
     local cur = skills[skillID] or 0
     if cur <= (floor or 0) then return false, "That rank is already saved." end
 
-    local _, treeName = self:GetSkill(skillID)
-    local tree = self.Tree[treeName]
+    local _, treeName, specName = self:GetSkill(skillID)
 
     local after = table.Copy(skills)
     after[skillID] = cur - 1
 
-    for id in pairs(tree and tree.Skills or {}) do
+    for id in pairs(self:GetGroupSkills(treeName, specName)) do
         if id ~= skillID and (skills[id] or 0) > 0 and self:IsUnlocked(skills, id) and not self:IsUnlocked(after, id) then
             local other = self:GetSkill(id)
             return false, other.name .. " depends on this."
@@ -315,13 +377,12 @@ end
 hook.Add("ArcCW_PostLoadAtts", "SkillTrees_PatchAttachments", function() SkillTrees:PatchArcCW() end)
 hook.Add("InitPostEntity", "SkillTrees_PatchAttachments", function() SkillTrees:PatchArcCW() end)
 
--- Points spent in a tree and the most it can take
-function SkillTrees:GetTreeProgress(skills, treeName)
-    local tree = self.Tree[treeName]
+-- Points spent in a base tree (or one of its specialisations) and the most it can take
+function SkillTrees:GetTreeProgress(skills, treeName, specName)
     local spent, total = 0, 0
-    if not tree then return 0, 0 end
+    if not self.Tree[treeName] then return 0, 0 end
     skills = skills or {}
-    for id, info in pairs(tree.Skills or {}) do
+    for id, info in pairs(self:GetGroupSkills(treeName, specName)) do
         local price = info.price or 1
         spent = spent + price * (skills[id] or 0)
         total = total + price * (info.maxLevel or 1)

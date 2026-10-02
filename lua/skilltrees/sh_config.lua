@@ -48,7 +48,14 @@ Tree fields
     Attachments      ArcCW attachment ids every member of this unit can use (e.g. its scopes).
                      Like skill `unlocks`, listing an attachment here locks it for everyone else.
     Skills           { [id] = skill }
-    Specializations  { [name] = { name, description, unlockLevel, comingSoon, Skills } }
+    Specializations  { [name] = { name, description, unlockLevel, RowPoints, comingSoon, Skills } }
+                     A tree's specialisations are either/or: a player who has put a point into one cannot
+                     learn the other until they take those points back out or reset. `Skills` uses the
+                     same fields as a base tree skill (below); leave it empty (or set comingSoon) to show a
+                     placeholder. `unlockLevel` is the player level needed. `RowPoints` is the points that
+                     must be spent in the rows above to open the next one (default ROW_POINTS); specialisations
+                     use a smaller gate because they share the player's points with the base tree. Skill ids
+                     must be unique across the whole file.
 
 Skill fields
     name, description
@@ -140,8 +147,70 @@ SkillTrees.Tree = {
                 name = "Assault Specialist",
                 description = "Close-range burst damage for breaching and pushing objectives.",
                 unlockLevel = 15,
-                comingSoon = true,
-                Skills = {},
+                RowPoints = 3,
+                Skills = {
+                    ["212th_as_breach"] = {
+                        row = 1, col = 1,
+                        name = "Breaching Doctrine",
+                        description = "Increase bullet damage by 4% per level",
+                        price = 1, maxLevel = 3,
+                        buffs = { damage = 0.04 },
+                    },
+                    ["212th_as_rush"] = {
+                        row = 1, col = 2,
+                        name = "Rush Tactics",
+                        description = "Increase move speed by 3% per level",
+                        price = 1, maxLevel = 2,
+                        buffs = { movespeed = 0.03 },
+                    },
+                    ["212th_as_cycle"] = {
+                        row = 1, col = 3,
+                        name = "Rapid Cycling",
+                        description = "Increase fire rate by 4% per level",
+                        price = 1, maxLevel = 3,
+                        buffs = { firerate = 0.04 },
+                    },
+                    ["212th_as_plate"] = {
+                        row = 1, col = 4,
+                        name = "Breacher Plating",
+                        description = "Increase armor by 8 per level",
+                        price = 1, maxLevel = 2,
+                        buffs = { armor = 8 },
+                    },
+                    ["212th_as_shock"] = {
+                        row = 2, col = 1,
+                        name = "Shock Entry",
+                        description = "Increase bullet damage by 5% per level",
+                        price = 2, maxLevel = 2,
+                        requirement = "212th_as_breach",
+                        buffs = { damage = 0.05 },
+                    },
+                    ["212th_as_momentum"] = {
+                        row = 2, col = 2,
+                        name = "Momentum",
+                        description = "Regenerate 2 health every 2 seconds out of combat",
+                        price = 1, maxLevel = 2,
+                        requirement = "212th_as_rush",
+                        buffs = { hpregen = 2 },
+                    },
+                    ["212th_as_overdrive"] = {
+                        row = 2, col = 3,
+                        name = "Overdrive",
+                        description = "Increase reload speed by 6% per level",
+                        price = 1, maxLevel = 2,
+                        requirement = "212th_as_cycle",
+                        buffs = { reloadspeed = 0.06 },
+                    },
+                    ["212th_as_breach_clear"] = {
+                        row = 3, col = 2,
+                        name = "Breach and Clear",
+                        description = "Increase bullet damage by 8% and fire rate by 6%",
+                        price = 3, maxLevel = 1,
+                        requirement = "212th_as_shock",
+                        icon = "icon16/medal_gold_1.png",
+                        buffs = { damage = 0.08, firerate = 0.06 },
+                    },
+                },
             },
             ["Gunnery"] = {
                 name = "Gunnery",
@@ -226,8 +295,70 @@ SkillTrees.Tree = {
                 name = "Tactics",
                 description = "Mobile skirmishing: hit, reposition and flank.",
                 unlockLevel = 15,
-                comingSoon = true,
-                Skills = {},
+                RowPoints = 3,
+                Skills = {
+                    ["104th_tac_footwork"] = {
+                        row = 1, col = 1,
+                        name = "Light Footwork",
+                        description = "Increase move speed by 3% per level",
+                        price = 1, maxLevel = 3,
+                        buffs = { movespeed = 0.03 },
+                    },
+                    ["104th_tac_hands"] = {
+                        row = 1, col = 2,
+                        name = "Quick Hands",
+                        description = "Increase reload speed by 6% per level",
+                        price = 1, maxLevel = 2,
+                        buffs = { reloadspeed = 0.06 },
+                    },
+                    ["104th_tac_conditioning"] = {
+                        row = 1, col = 3,
+                        name = "Field Conditioning",
+                        description = "Increase health by 10 per level",
+                        price = 1, maxLevel = 3,
+                        buffs = { hp = 10 },
+                    },
+                    ["104th_tac_snap"] = {
+                        row = 1, col = 4,
+                        name = "Snap Shooting",
+                        description = "Increase fire rate by 4% per level",
+                        price = 1, maxLevel = 2,
+                        buffs = { firerate = 0.04 },
+                    },
+                    ["104th_tac_flank"] = {
+                        row = 2, col = 1,
+                        name = "Flanking Manoeuvres",
+                        description = "Increase move speed by 3% per level",
+                        price = 2, maxLevel = 2,
+                        requirement = "104th_tac_footwork",
+                        buffs = { movespeed = 0.03 },
+                    },
+                    ["104th_tac_opportunist"] = {
+                        row = 2, col = 2,
+                        name = "Opportunist",
+                        description = "Increase bullet damage by 4% per level",
+                        price = 2, maxLevel = 2,
+                        requirement = "104th_tac_hands",
+                        buffs = { damage = 0.04 },
+                    },
+                    ["104th_tac_wind"] = {
+                        row = 2, col = 3,
+                        name = "Second Wind",
+                        description = "Regenerate 2 health every 2 seconds out of combat",
+                        price = 1, maxLevel = 2,
+                        requirement = "104th_tac_conditioning",
+                        buffs = { hpregen = 2 },
+                    },
+                    ["104th_tac_hit_and_run"] = {
+                        row = 3, col = 2,
+                        name = "Hit and Run",
+                        description = "Increase move speed, bullet damage and reload speed by 5%",
+                        price = 3, maxLevel = 1,
+                        requirement = "104th_tac_opportunist",
+                        icon = "icon16/medal_gold_1.png",
+                        buffs = { movespeed = 0.05, damage = 0.05, reloadspeed = 0.05 },
+                    },
+                },
             },
             ["Sharpshooter"] = {
                 name = "Sharpshooter",
@@ -313,8 +444,70 @@ SkillTrees.Tree = {
                 name = "Shield Specialist",
                 description = "Hold the line with heavier armour and damage reduction.",
                 unlockLevel = 15,
-                comingSoon = true,
-                Skills = {},
+                RowPoints = 3,
+                Skills = {
+                    ["shock_shield_plate"] = {
+                        row = 1, col = 1,
+                        name = "Reinforced Plating",
+                        description = "Increase armor by 8 per level",
+                        price = 1, maxLevel = 3,
+                        buffs = { armor = 8 },
+                    },
+                    ["shock_shield_frame"] = {
+                        row = 1, col = 2,
+                        name = "Hardened Frame",
+                        description = "Increase health by 10 per level",
+                        price = 1, maxLevel = 3,
+                        buffs = { hp = 10 },
+                    },
+                    ["shock_shield_guard"] = {
+                        row = 1, col = 3,
+                        name = "Guard Stance",
+                        description = "Reduce damage taken by 1% per level",
+                        price = 1, maxLevel = 2,
+                        buffs = { resistance = 0.01 },
+                    },
+                    ["shock_shield_mend"] = {
+                        row = 1, col = 4,
+                        name = "Field Repair",
+                        description = "Regenerate 1 armor every 2 seconds",
+                        price = 1, maxLevel = 2,
+                        buffs = { armorregen = 1 },
+                    },
+                    ["shock_shield_bulwark"] = {
+                        row = 2, col = 1,
+                        name = "Bulwark",
+                        description = "Increase armor by 8 and health by 5 per level",
+                        price = 2, maxLevel = 2,
+                        requirement = "shock_shield_plate",
+                        buffs = { armor = 8, hp = 5 },
+                    },
+                    ["shock_shield_endure"] = {
+                        row = 2, col = 2,
+                        name = "Endure",
+                        description = "Regenerate 2 health every 2 seconds out of combat",
+                        price = 1, maxLevel = 2,
+                        requirement = "shock_shield_frame",
+                        buffs = { hpregen = 2 },
+                    },
+                    ["shock_shield_stand"] = {
+                        row = 2, col = 3,
+                        name = "Stand Firm",
+                        description = "Reduce damage taken by 1.5% per level",
+                        price = 2, maxLevel = 2,
+                        requirement = "shock_shield_guard",
+                        buffs = { resistance = 0.015 },
+                    },
+                    ["shock_shield_immovable"] = {
+                        row = 3, col = 2,
+                        name = "Immovable Object",
+                        description = "Increase armor by 15 and health by 20, and reduce damage taken by 3%",
+                        price = 3, maxLevel = 1,
+                        requirement = "shock_shield_bulwark",
+                        icon = "icon16/medal_gold_1.png",
+                        buffs = { armor = 15, hp = 20, resistance = 0.03 },
+                    },
+                },
             },
             ["Gunnery"] = {
                 name = "Gunnery",
@@ -416,15 +609,81 @@ SkillTrees.Tree = {
                 name = "Marksmanship",
                 description = "Sniper training with access to long-range scopes.",
                 unlockLevel = 15,
-                comingSoon = true,
-                Skills = {},
+                RowPoints = 3,
+                Skills = {
+                    ["mun10_mark_aim"] = {
+                        row = 1, col = 1,
+                        name = "Steady Aim",
+                        description = "Increase bullet damage by 5% per level",
+                        price = 1, maxLevel = 3,
+                        buffs = { damage = 0.05 },
+                    },
+                    ["mun10_mark_reload"] = {
+                        row = 1, col = 2,
+                        name = "Deliberate Reload",
+                        description = "Increase reload speed by 5% per level",
+                        price = 1, maxLevel = 2,
+                        buffs = { reloadspeed = 0.05 },
+                    },
+                    ["mun10_mark_vest"] = {
+                        row = 1, col = 3,
+                        name = "Sniper's Vest",
+                        description = "Increase armor by 5 per level",
+                        price = 1, maxLevel = 2,
+                        buffs = { armor = 5 },
+                    },
+                    ["mun10_mark_body"] = {
+                        row = 1, col = 4,
+                        name = "Disciplined Body",
+                        description = "Increase health by 8 per level",
+                        price = 1, maxLevel = 2,
+                        buffs = { hp = 8 },
+                    },
+                    ["mun10_mark_dragunov"] = {
+                        row = 2, col = 1,
+                        name = "Long Shot",
+                        description = "Increase bullet damage by 4% and unlock the Dragunov PSO-1 scope",
+                        price = 2, maxLevel = 1,
+                        requirement = "mun10_mark_aim",
+                        icon = "icon16/zoom.png",
+                        unlocks = { "fml_mw2r_optic_dragunov" },
+                        buffs = { damage = 0.04 },
+                    },
+                    ["mun10_mark_bolt"] = {
+                        row = 2, col = 2,
+                        name = "Bolt Discipline",
+                        description = "Increase reload speed by 6% per level",
+                        price = 1, maxLevel = 2,
+                        requirement = "mun10_mark_reload",
+                        buffs = { reloadspeed = 0.06 },
+                    },
+                    ["mun10_mark_resolve"] = {
+                        row = 2, col = 3,
+                        name = "Sniper's Resolve",
+                        description = "Reduce damage taken by 1% per level",
+                        price = 2, maxLevel = 2,
+                        requirement = "mun10_mark_vest",
+                        buffs = { resistance = 0.01 },
+                    },
+                    ["mun10_mark_apex"] = {
+                        row = 3, col = 2,
+                        name = "Apex Marksman",
+                        description = "Increase bullet damage by 8% and unlock the WA2000 scope",
+                        price = 3, maxLevel = 1,
+                        requirement = "mun10_mark_dragunov",
+                        icon = "icon16/medal_gold_1.png",
+                        unlocks = { "fml_mw2r_optic_wa2000" },
+                        buffs = { damage = 0.08 },
+                    },
+                },
             },
         },
     },
 }
 
 -- Attachments locked for everyone until something unlocks them. The long-range sniper scopes
--- are held back for the Sharpshooter (104th) and Marksmanship (Muunilinst 10) specialisations.
+-- are held back for specialisations: Marksmanship (Muunilinst 10) unlocks the Dragunov, then the WA2000.
+-- Sharpshooter (104th) is planned to offer them too.
 SkillTrees.LockedAttachments = {
     "fml_mw2r_optic_dragunov",
     "fml_mw2r_optic_wa2000",

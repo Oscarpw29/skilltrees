@@ -229,9 +229,9 @@ function MENU:SelectTree(name)
     table.insert(self.Columns, base)
 
     local specs = SkillTrees.Tree[name].Specializations or {}
-    for _, spec in SortedPairs(specs) do
+    for specName, spec in SortedPairs(specs) do
         local col = vgui.Create("VTX_SkillTree", self.Body)
-        col:Setup(self, name, "spec", spec)
+        col:Setup(self, name, "spec", spec, specName)
         table.insert(self.Columns, col)
     end
 

@@ -1,6 +1,6 @@
--- One column of the SWTOR-style window: a unit's base tree (interactive grid of skills)
--- or a specialisation (placeholder until it's released). Built once per tree selection;
--- live data is read in Paint so it never rebuilds on sync.
+-- One column of the SWTOR-style window: a unit's base tree (interactive grid of skills) or a
+-- specialisation (the same grid once it has skills, a "coming soon" placeholder until then). Built
+-- once per tree selection; live data is read in Paint so it never rebuilds on sync.
 local UI = SkillTrees.UI
 local TREE = {}
 
@@ -15,19 +15,22 @@ function TREE:Init()
     self.Nodes = {}
 end
 
--- kind: "base" or "spec". For "spec", `spec` is its config table.
-function TREE:Setup(menu, treeName, kind, spec)
+-- kind: "base" or "spec". For "spec", `spec` is its config table and `specName` its key.
+function TREE:Setup(menu, treeName, kind, spec, specName)
     self.Menu = menu
     self.TreeName = treeName
     self.Tree = SkillTrees.Tree[treeName]
     self.Color = self.Tree.Color or Color(155, 155, 165)
     self.Kind = kind
     self.Spec = spec
+    self.SpecName = specName
 
-    if kind ~= "base" then return end
+    -- A specialisation with no skills yet stays a placeholder
+    self.Live = kind == "base" or SkillTrees:SpecIsLive(treeName, specName)
+    if not self.Live then return end
 
     local interactive = SkillTrees:CanAccessTree(LocalPlayer(), treeName)
-    for id in pairs(self.Tree.Skills or {}) do
+    for id in pairs(SkillTrees:GetGroupSkills(treeName, specName)) do
         local node = vgui.Create("VTX_SkillNode", self)
         node:Setup(menu, id, self.Color, interactive)
         self.Nodes[id] = node
@@ -82,7 +85,7 @@ function TREE:PaintRows(w)
 
     for row = 2, SkillTrees.TREE_ROWS do
         local y = math.floor(gy + (row - 1) * rh)
-        local need = SkillTrees:GetRowGate(row) - SkillTrees:SpentBelowRow(skills, self.TreeName, row)
+        local need = SkillTrees:GetRowGate(row, self.TreeName, self.SpecName) - SkillTrees:SpentBelowRow(skills, self.TreeName, row, self.SpecName)
         local open = need <= 0
 
         surface.SetDrawColor(self.Color.r, self.Color.g, self.Color.b, open and 50 or 25)
@@ -160,6 +163,7 @@ function TREE:PaintFooter(w, h)
         spent = SkillTrees:GetTreeProgress(self.Menu:GetSkills(), self.TreeName)
         title, subtitle = self.TreeName, "Base Training"
     else
+        if self.Live then spent = SkillTrees:GetTreeProgress(self.Menu:GetSkills(), self.TreeName, self.SpecName) end
         title, subtitle = self.Spec.name or "?", "Specialisation"
     end
 
@@ -176,18 +180,61 @@ function TREE:PaintFooter(w, h)
     draw.SimpleText("(" .. subtitle .. ")", "VTX_Small", 44 + tw + 6, y + FOOTER_H / 2 + 1, UI.Col.textDim, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
 end
 
+-- What stops the player taking this specialisation right now (nil = it's open to them):
+-- "chosen", the name of the other specialisation they committed to, or "level", the level it needs.
+function TREE:SpecBlock()
+    if self.Kind ~= "spec" or not self.Live then return nil end
+
+    local held = SkillTrees:HeldSpec(self.Menu:GetSkills(), self.TreeName)
+    if held and held ~= self.SpecName then return "chosen", held end
+
+    local level = (LocalPlayer().SkillData or {}).level or 1
+    local unlock = self.Spec.unlockLevel
+    if unlock and level < unlock then return "level", unlock end
+    return nil
+end
+
 function TREE:Paint(w, h)
     local isBase = self.Kind == "base"
-    UI.Panel(w, h, self.Color, UI.Alpha(self.Color, isBase and 140 or 60), isBase and 70 or 22)
+    local live = self.Live
+    UI.Panel(w, h, self.Color, UI.Alpha(self.Color, live and 140 or 60), live and 70 or 22)
 
-    if isBase then
+    if live then
         self:PaintRows(w)
         self:PaintConnectors()
+        if not isBase then
+            local held = SkillTrees:HeldSpec(self.Menu:GetSkills(), self.TreeName)
+            local tag = held == self.SpecName and "YOUR SPECIALISATION" or "SPECIALISATION - CHOOSE ONE"
+            draw.SimpleText(tag, "VTX_Small", w / 2, 8, held == self.SpecName and UI.Col.gold or UI.Col.textFaint, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+        end
     else
         self:PaintGhost(w, h)
     end
 
     self:PaintFooter(w, h)
+end
+
+-- Drawn over the nodes: dims a specialisation that's closed to the player and says why. It's only
+-- paint, so the nodes underneath still show their tooltips.
+function TREE:PaintOver(w, h)
+    local block, detail = self:SpecBlock()
+    if not block then return end
+
+    local _, gy, _, gh = self:GridRect()
+    local cardW, cardH = math.min(w - 40, 220), 56
+    local x, y = (w - cardW) / 2, gy + (gh - cardH) / 2
+
+    surface.SetDrawColor(0, 0, 0, 150)
+    UI.Rect(2, 2, w - 4, h - FOOTER_H - 4)
+
+    UI.RoundBox(x, y, cardW, cardH, 8, Color(6, 10, 14), UI.Alpha(block == "chosen" and UI.Col.red or self.Color, 160))
+    if block == "chosen" then
+        draw.SimpleText("LOCKED", "VTX_Heading", w / 2, y + 17, UI.Col.red, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+        draw.SimpleText("You chose " .. detail, "VTX_Small", w / 2, y + 36, UI.Col.textDim, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+    else
+        draw.SimpleText("UNLOCKS AT LEVEL " .. detail, "VTX_Heading", w / 2, y + 17, UI.Col.gold, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+        draw.SimpleText("Pick one specialisation", "VTX_Small", w / 2, y + 36, UI.Col.textDim, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+    end
 end
 
 vgui.Register("VTX_SkillTree", TREE, "DPanel")
