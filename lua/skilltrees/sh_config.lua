@@ -32,7 +32,7 @@ SkillTrees.RankMultipliers = {
     ["Platinum VIP"]  = 3.0,
     ["Gold VIP"]      = 2.5,
     ["Silver VIP"]    = 2.0,
-    ["Bronze VIP"]    = 1.5,
+    ["Bronze VIP"]    = 1.55,
     ["user"]          = 1.0,
 }
 
