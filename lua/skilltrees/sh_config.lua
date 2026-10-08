@@ -42,8 +42,10 @@ Tree fields
     Emblem           optional material path for the unit badge shown on its tab
     Order            optional sort position in the menu (lower first, then by name)
     Access (a tree with none of these is open to everyone; matching any one grants access):
-        MRSGroup     { "212th Attack" }   must match the player's MRS group exactly
-        Teams        { TEAM_X, "Job Name" }
+        Teams        { "1st Sector Wolfpack Company" }   DarkRP job names (or TEAM_X ids); the player must be on one of
+                     them. Whitelists live in the GAS job whitelist addon, so this follows the job a player is on
+                     right now. Skills they have learned stay saved to them when they change job.
+        MRSGroup     { "212th Attack" }   must match the player's MRS group exactly (only if you use MRS ranks)
         Ranks        { "superadmin" }     user groups
         SteamIDs     { "STEAM_0:1:..." }
     Attachments      ArcCW attachment ids every member of this unit can use (e.g. its scopes).
@@ -73,12 +75,27 @@ Skill fields
     icon             optional material path for the node (defaults to the first buff's icon)
 ]]
 
+-- Job names come from DarkRP (darkrp_customthings/jobs.lua). A player gets a tree while they are on one
+-- of its jobs; the skills they have learned are saved to them and survive changing job.
+local FIRST_SECTOR_LEADERS = {
+    "1st Sector Senior Commander", "1st Sector Commander", "1st Sector Officer", "1st Sector Squad Leader",
+}
+
+-- jobs(listOrName, ...) flattens job lists and single names into one list
+local function jobs(...)
+    local out = {}
+    for _, part in ipairs({ ... }) do
+        if istable(part) then table.Add(out, part) else table.insert(out, part) end
+    end
+    return out
+end
+
 SkillTrees.Tree = {
     ["212th"] = {
         Emblem = "vtx_skills/unit_212th.png",
         Order = 1,
         Color = Color(255, 140, 0),
-        MRSGroup = { "212th Attack" },
+        Teams = jobs(FIRST_SECTOR_LEADERS, "1st Sector 2nd Airborne Company", "1st Sector Ghost Ranger Company"),
         Attachments = { "fml_mw2r_optic_holo", "fml_mw_optic_viper", "fml_mw_optic_mag_holo", "fml_mw2r_optic_acog" }, -- unit scopes
         Skills = {
             ["212th_hp_1"] = {
@@ -230,7 +247,7 @@ SkillTrees.Tree = {
         Emblem = "vtx_skills/unit_104th.png",
         Order = 2,
         Color = Color(150, 60, 60),
-        MRSGroup = { "104th Mechanized" },
+        Teams = jobs(FIRST_SECTOR_LEADERS, "1st Sector Wolfpack Company"),
         Attachments = { "fml_mw_optic_opk7", "fml_mw2r_optic_mars", "fml_mw_optic_mag_kobra", "fml_mw2r_optic_aug" }, -- unit scopes
         Skills = {
             ["104th_speed_1"] = {
@@ -377,11 +394,181 @@ SkillTrees.Tree = {
         },
     },
 
+    ["Torrent"] = {
+        Order = 3,
+        Color = Color(60, 120, 230),
+        Teams = jobs(FIRST_SECTOR_LEADERS, "1st Sector Torrent Company"),
+        Skills = {
+            ["torrent_hp"] = {
+                row = 1, col = 1,
+                name = "Torrent Resolve",
+                description = "Increase health by 10 per level",
+                price = 1, maxLevel = 3,
+                buffs = { hp = 10 },
+            },
+            ["torrent_armor"] = {
+                row = 2, col = 1,
+                name = "Sturdy Plating",
+                description = "Increase armor by 6 per level",
+                price = 1, maxLevel = 3,
+                requirement = "torrent_hp",
+                buffs = { armor = 6 },
+            },
+            ["torrent_damage"] = {
+                row = 1, col = 2,
+                name = "Aggressive Doctrine",
+                description = "Increase bullet damage by 5% per level",
+                price = 1, maxLevel = 3,
+                buffs = { damage = 0.05 },
+            },
+            ["torrent_firerate"] = {
+                row = 2, col = 2,
+                name = "Sustained Assault",
+                description = "Increase fire rate by 5% per level",
+                price = 2, maxLevel = 2,
+                requirement = "torrent_damage",
+                buffs = { firerate = 0.05 },
+            },
+            ["torrent_res"] = {
+                row = 1, col = 3,
+                name = "Hold Fast",
+                description = "Reduce damage taken by 1% per level",
+                price = 1, maxLevel = 3,
+                buffs = { resistance = 0.01 },
+            },
+            ["torrent_speed"] = {
+                row = 2, col = 3,
+                name = "Press the Attack",
+                description = "Increase move speed by 2% per level",
+                price = 1, maxLevel = 3,
+                requirement = "torrent_res",
+                buffs = { movespeed = 0.02 },
+            },
+            ["torrent_salary"] = {
+                row = 3, col = 2,
+                name = "Company Pay",
+                description = "Increase salary by 5% per level",
+                price = 2, maxLevel = 2,
+                buffs = { salary_bonus = 0.05 },
+            },
+            ["torrent_capstone"] = {
+                row = 3, col = 3,
+                name = "Torrent Company Veteran",
+                description = "Capstone. Unlocks a specialised Energization cell, internal modification and training perk for your weapons.",
+                price = 2, maxLevel = 1,
+                minLevel = 15,
+                icon = "vtx_skills/capstone.png",
+                unlocks = { "ammo_highoutput", "mod_reinforced_barrel", "perk_veteran_training" },
+            },
+        },
+        Specializations = {
+            ["Vanguard"] = {
+                name = "Vanguard",
+                description = "Lead the charge: close assault, breaching and holding ground.",
+                unlockLevel = 15,
+                comingSoon = true,
+                Skills = {},
+            },
+            ["Heavy Gunner"] = {
+                name = "Heavy Gunner",
+                description = "Sustained heavy fire that breaks up enemy formations.",
+                unlockLevel = 15,
+                comingSoon = true,
+                Skills = {},
+            },
+        },
+    },
+
+    ["Bacta"] = {
+        Order = 4,
+        Color = Color(70, 180, 120),
+        Teams = jobs(FIRST_SECTOR_LEADERS, "1st Sector Bacta Company"),
+        Skills = {
+            ["bacta_hp"] = {
+                row = 1, col = 1,
+                name = "Medic's Constitution",
+                description = "Increase health by 10 per level",
+                price = 1, maxLevel = 3,
+                buffs = { hp = 10 },
+            },
+            ["bacta_hpregen"] = {
+                row = 2, col = 1,
+                name = "Bacta Infusion",
+                description = "Regenerate 2 health every 2 seconds out of combat",
+                price = 1, maxLevel = 2,
+                requirement = "bacta_hp",
+                buffs = { hpregen = 2 },
+            },
+            ["bacta_armorregen"] = {
+                row = 1, col = 2,
+                name = "Field Plate Repair",
+                description = "Regenerate 1 armor every 2 seconds",
+                price = 1, maxLevel = 2,
+                buffs = { armorregen = 1 },
+            },
+            ["bacta_res"] = {
+                row = 2, col = 2,
+                name = "Triage Discipline",
+                description = "Reduce damage taken by 1% per level",
+                price = 2, maxLevel = 3,
+                requirement = "bacta_armorregen",
+                buffs = { resistance = 0.01 },
+            },
+            ["bacta_speed"] = {
+                row = 1, col = 3,
+                name = "Fleet-Footed",
+                description = "Increase move speed by 2% per level",
+                price = 1, maxLevel = 3,
+                buffs = { movespeed = 0.02 },
+            },
+            ["bacta_reload"] = {
+                row = 2, col = 3,
+                name = "Steady Hands",
+                description = "Increase reload speed by 5% per level",
+                price = 1, maxLevel = 3,
+                requirement = "bacta_speed",
+                buffs = { reloadspeed = 0.05 },
+            },
+            ["bacta_xp"] = {
+                row = 3, col = 2,
+                name = "Combat Medicine Training",
+                description = "Gain 10% more XP",
+                price = 2, maxLevel = 1,
+                buffs = { xp_boost = 0.1 },
+            },
+            ["bacta_capstone"] = {
+                row = 3, col = 3,
+                name = "Field Surgeon",
+                description = "Capstone. Unlocks a specialised Energization cell, internal modification and training perk for your weapons.",
+                price = 2, maxLevel = 1,
+                minLevel = 15,
+                icon = "vtx_skills/capstone.png",
+                unlocks = { "ammo_stabilized", "mod_lightweight_internals", "perk_veteran_training" },
+            },
+        },
+        Specializations = {
+            ["Triage"] = {
+                name = "Triage",
+                description = "Keep the squad alive: faster healing and sturdier allies.",
+                unlockLevel = 15,
+                comingSoon = true,
+                Skills = {},
+            },
+            ["Combat Support"] = {
+                name = "Combat Support",
+                description = "Fight alongside the line with better weapons handling.",
+                unlockLevel = 15,
+                comingSoon = true,
+                Skills = {},
+            },
+        },
+    },
+
     ["Shock"] = {
         Emblem = "vtx_skills/unit_shock.png",
-        Order = 3,
+        Order = 5,
         Color = Color(0, 210, 255),
-        MRSGroup = { "Shock Troopers" },
+        Teams = { "Shock Commander", "Shock Officer", "Shock Tracker", "Shock NCO", "Shock Medic", "Shock Enlisted" },
         Attachments = { "fml_mw_optic_holo", "fml_mw_optic_mag_holo", "fml_mw_optic_pkas", "fml_mw2r_optic_susat", "cw_ammo_stun_shot" }, -- unit scopes and gear
         Skills = {
             ["shock_armor_1"] = {
@@ -530,12 +717,12 @@ SkillTrees.Tree = {
     },
 
     -- Special operations: stronger ranks than the line units.
-    -- MRSGroup must match the unit's MRS group name exactly.
+    -- Access is by DarkRP job name (whitelists are handled by the GAS job whitelist addon).
     ["Muunilinst 10"] = {
         Emblem = "vtx_skills/unit_mun10.png",
-        Order = 4,
+        Order = 6,
         Color = Color(150, 110, 235),
-        MRSGroup = { "Muunilinst 10" },
+        Teams = { "M10 Alpha-77 Fordo", "M10 Alpha-17", "M10 Alpha ARC Pilot", "M10 Alpha ARC Heavy", "M10 Alpha ARC" },
         Attachments = { "fml_mw_optic_1p29", "fml_mw2r_optic_acog_acog", "fml_mw_optic_mag_opk7", "fml_mw2r_optic_thermal" }, -- unit scopes
         Skills = {
             ["mun10_damage_1"] = {
