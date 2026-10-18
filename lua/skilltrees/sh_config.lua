@@ -91,11 +91,11 @@ local function jobs(...)
 end
 
 SkillTrees.Tree = {
-    ["212th"] = {
+    ["2nd Airborne"] = {
         Emblem = "vtx_skills/unit_212th.png",
         Order = 1,
         Color = Color(255, 140, 0),
-        Teams = jobs(FIRST_SECTOR_LEADERS, "1st Sector 2nd Airborne Company", "1st Sector Ghost Ranger Company"),
+        Teams = jobs(FIRST_SECTOR_LEADERS, "1st Sector 2nd Airborne Company"),
         Attachments = { "fml_mw2r_optic_holo", "fml_mw_optic_viper", "fml_mw_optic_mag_holo", "fml_mw2r_optic_acog" }, -- unit scopes
         Skills = {
             ["212th_hp_1"] = {
@@ -243,7 +243,7 @@ SkillTrees.Tree = {
         },
     },
 
-    ["104th"] = {
+    ["Wolfpack"] = {
         Emblem = "vtx_skills/unit_104th.png",
         Order = 2,
         Color = Color(150, 60, 60),
@@ -564,9 +564,94 @@ SkillTrees.Tree = {
         },
     },
 
+    ["Ghost Ranger"] = {
+        Order = 5,
+        Color = Color(110, 150, 90),
+        Teams = jobs(FIRST_SECTOR_LEADERS, "1st Sector Ghost Ranger Company"),
+        Skills = {
+            ["ghost_speed_1"] = {
+                row = 1, col = 1,
+                name = "Light Step",
+                description = "Increase move speed by 3% per level",
+                price = 1, maxLevel = 3,
+                buffs = { movespeed = 0.03 },
+            },
+            ["ghost_speed_2"] = {
+                row = 2, col = 1,
+                name = "Pathfinder",
+                description = "Increase move speed by a further 3% per level",
+                price = 2, maxLevel = 2,
+                requirement = "ghost_speed_1",
+                buffs = { movespeed = 0.03 },
+            },
+            ["ghost_damage"] = {
+                row = 1, col = 2,
+                name = "Marked Target",
+                description = "Increase bullet damage by 5% per level",
+                price = 1, maxLevel = 3,
+                buffs = { damage = 0.05 },
+            },
+            ["ghost_reload"] = {
+                row = 2, col = 2,
+                name = "Silent Reload",
+                description = "Increase reload speed by 6% per level",
+                price = 1, maxLevel = 3,
+                requirement = "ghost_damage",
+                buffs = { reloadspeed = 0.06 },
+            },
+            ["ghost_hp"] = {
+                row = 1, col = 3,
+                name = "Recon Conditioning",
+                description = "Increase health by 8 per level",
+                price = 1, maxLevel = 3,
+                buffs = { hp = 8 },
+            },
+            ["ghost_regen"] = {
+                row = 2, col = 3,
+                name = "Field Recovery",
+                description = "Regenerate 2 health every 2 seconds out of combat",
+                price = 1, maxLevel = 2,
+                requirement = "ghost_hp",
+                buffs = { hpregen = 2 },
+            },
+            ["ghost_xp"] = {
+                row = 3, col = 2,
+                name = "Reconnaissance Training",
+                description = "Gain 10% more XP",
+                price = 2, maxLevel = 1,
+                buffs = { xp_boost = 0.1 },
+            },
+            ["ghost_capstone"] = {
+                row = 3, col = 3,
+                name = "Ghost of the Line",
+                description = "Capstone. Unlocks a specialised Energization cell, internal modification and training perk for your weapons.",
+                price = 2, maxLevel = 1,
+                minLevel = 15,
+                icon = "vtx_skills/capstone.png",
+                unlocks = { "ammo_stabilized", "mod_cooling_vents", "perk_marksman_training" },
+            },
+        },
+        Specializations = {
+            ["Scout"] = {
+                name = "Scout",
+                description = "Fast forward recon: spot, mark and fall back.",
+                unlockLevel = 15,
+                comingSoon = true,
+                Skills = {},
+            },
+            ["Infiltrator"] = {
+                name = "Infiltrator",
+                description = "Slip behind the line for surgical strikes.",
+                unlockLevel = 15,
+                comingSoon = true,
+                Skills = {},
+            },
+        },
+    },
+
     ["Shock"] = {
         Emblem = "vtx_skills/unit_shock.png",
-        Order = 5,
+        Order = 6,
         Color = Color(0, 210, 255),
         Teams = { "Shock Commander", "Shock Officer", "Shock Tracker", "Shock NCO", "Shock Medic", "Shock Enlisted" },
         Attachments = { "fml_mw_optic_holo", "fml_mw_optic_mag_holo", "fml_mw_optic_pkas", "fml_mw2r_optic_susat", "cw_ammo_stun_shot" }, -- unit scopes and gear
@@ -720,7 +805,7 @@ SkillTrees.Tree = {
     -- Access is by DarkRP job name (whitelists are handled by the GAS job whitelist addon).
     ["Muunilinst 10"] = {
         Emblem = "vtx_skills/unit_mun10.png",
-        Order = 6,
+        Order = 7,
         Color = Color(150, 110, 235),
         Teams = { "M10 Alpha-77 Fordo", "M10 Alpha-17", "M10 Alpha ARC Pilot", "M10 Alpha ARC Heavy", "M10 Alpha ARC" },
         Attachments = { "fml_mw_optic_1p29", "fml_mw2r_optic_acog_acog", "fml_mw_optic_mag_opk7", "fml_mw2r_optic_thermal" }, -- unit scopes

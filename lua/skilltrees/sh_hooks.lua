@@ -35,8 +35,18 @@ end
 hook.Add("M_Hook_Mult_Damage", "Vortex_Skills_ArcCW_Damage", scaleDamage)
 hook.Add("M_Hook_Mult_DamageMin", "Vortex_Skills_ArcCW_DamageMin", scaleDamage)
 
--- Fire rate: CycleTime is the delay between shots, so a faster gun is a smaller multiplier
-hook.Add("M_Hook_Mult_CycleTime", "Vortex_Skills_ArcCW_FireRate", function(wep, data)
+-- Fire rate: ArcCW's delay between shots is Delay * (1 / Mult_RPM) (SWEP:GetFiringDelay), so a
+-- higher Mult_RPM is a faster gun. This is what attachments change too.
+hook.Add("M_Hook_Mult_RPM", "Vortex_Skills_ArcCW_FireRate", function(wep, data)
+    local buffs = arcBuffs(wep)
+    if not buffs or buffs.firerate <= 0 then return end
+    data.mult = data.mult * (1 + buffs.firerate)
+    return data
+end)
+
+-- Mult_CycleTime only times the fire animation. Keep it in step so the weapon's animation lock
+-- doesn't hold back the faster shots (a smaller multiplier = a shorter animation).
+hook.Add("M_Hook_Mult_CycleTime", "Vortex_Skills_ArcCW_FireAnim", function(wep, data)
     local buffs = arcBuffs(wep)
     if not buffs or buffs.firerate <= 0 then return end
     data.mult = data.mult / (1 + buffs.firerate)
