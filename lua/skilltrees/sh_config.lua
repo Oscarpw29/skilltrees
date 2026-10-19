@@ -641,10 +641,74 @@ SkillTrees.Tree = {
             },
             ["Infiltrator"] = {
                 name = "Infiltrator",
-                description = "Slip behind the line for surgical strikes.",
+                description = "Slip behind the line for surgical strikes, with thermal optics.",
                 unlockLevel = 15,
-                comingSoon = true,
-                Skills = {},
+                RowPoints = 3,
+                Skills = {
+                    ["ghost_inf_step"] = {
+                        row = 1, col = 1,
+                        name = "Silent Approach",
+                        description = "Increase move speed by 3% per level",
+                        price = 1, maxLevel = 3,
+                        buffs = { movespeed = 0.03 },
+                    },
+                    ["ghost_inf_focus"] = {
+                        row = 1, col = 2,
+                        name = "Patient Hunter",
+                        description = "Increase bullet damage by 4% per level",
+                        price = 1, maxLevel = 3,
+                        buffs = { damage = 0.04 },
+                    },
+                    ["ghost_inf_hands"] = {
+                        row = 1, col = 3,
+                        name = "Quiet Hands",
+                        description = "Increase reload speed by 5% per level",
+                        price = 1, maxLevel = 2,
+                        buffs = { reloadspeed = 0.05 },
+                    },
+                    ["ghost_inf_body"] = {
+                        row = 1, col = 4,
+                        name = "Lean Conditioning",
+                        description = "Increase health by 8 per level",
+                        price = 1, maxLevel = 2,
+                        buffs = { hp = 8 },
+                    },
+                    ["ghost_inf_shadow"] = {
+                        row = 2, col = 1,
+                        name = "Shadow Step",
+                        description = "Increase move speed by 3% per level",
+                        price = 2, maxLevel = 2,
+                        requirement = "ghost_inf_step",
+                        buffs = { movespeed = 0.03 },
+                    },
+                    ["ghost_inf_thermal"] = {
+                        row = 2, col = 2,
+                        name = "Thermal Optics",
+                        description = "Increase bullet damage by 3% and unlock the MW2R Thermal scope",
+                        price = 2, maxLevel = 1,
+                        requirement = "ghost_inf_focus",
+                        icon = "vtx_skills/scope.png",
+                        unlocks = { "fml_mw2r_optic_thermal" },
+                        buffs = { damage = 0.03 },
+                    },
+                    ["ghost_inf_resolve"] = {
+                        row = 2, col = 4,
+                        name = "Cold Nerve",
+                        description = "Reduce damage taken by 1% per level",
+                        price = 2, maxLevel = 2,
+                        requirement = "ghost_inf_body",
+                        buffs = { resistance = 0.01 },
+                    },
+                    ["ghost_inf_protocol"] = {
+                        row = 3, col = 2,
+                        name = "Ghost Protocol",
+                        description = "Increase move speed by 5%, bullet damage by 6% and reload speed by 5%",
+                        price = 3, maxLevel = 1,
+                        requirement = "ghost_inf_thermal",
+                        icon = "vtx_skills/capstone.png",
+                        buffs = { movespeed = 0.05, damage = 0.06, reloadspeed = 0.05 },
+                    },
+                },
             },
         },
     },
@@ -966,7 +1030,8 @@ SkillTrees.Tree = {
 
 -- Attachments locked for everyone until something unlocks them. The long-range sniper scopes
 -- are held back for specialisations: Marksmanship (Muunilinst 10) unlocks the Dragunov, then the WA2000.
--- Sharpshooter (104th) is planned to offer them too.
+-- Sharpshooter (Wolfpack) is planned to offer them too. The thermal scope (a Muunilinst 10 unit scope) is
+-- also unlockable through Ghost Ranger's Infiltrator specialisation (Thermal Optics).
 SkillTrees.LockedAttachments = {
     "fml_mw2r_optic_dragunov",
     "fml_mw2r_optic_wa2000",
