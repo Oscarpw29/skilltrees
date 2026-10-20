@@ -702,10 +702,11 @@ SkillTrees.Tree = {
                     ["ghost_inf_protocol"] = {
                         row = 3, col = 2,
                         name = "Ghost Protocol",
-                        description = "Increase move speed by 5%, bullet damage by 6% and reload speed by 5%",
+                        description = "Increase move speed by 5%, bullet damage by 6% and reload speed by 5%, and unlock the Breach Targeting Link tactical and the Shock Entry Grip",
                         price = 3, maxLevel = 1,
                         requirement = "ghost_inf_thermal",
                         icon = "vtx_skills/capstone.png",
+                        unlocks = { "cw_tac_breach_link", "cw_grip_shock_entry" },
                         buffs = { movespeed = 0.05, damage = 0.06, reloadspeed = 0.05 },
                     },
                 },
